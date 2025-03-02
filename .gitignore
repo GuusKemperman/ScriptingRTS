@@ -33,5 +33,5 @@
 /.vs
 /Intermediate
 /Build
-Ants.vcxproj.user
 /External/CoralEngine
+*.user
