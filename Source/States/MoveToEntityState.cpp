@@ -2,7 +2,7 @@
 #include "States/MoveToEntityState.h"
 
 #include "Components/SimulationComponent.h"
-#include "Components/TransformComponent.h"
+#include "Components/Physics2D/DiskColliderComponent.h"
 #include "Core/GameState.h"
 #include "World/Registry.h"
 #include "Utilities/Math.h"
@@ -12,7 +12,7 @@ void RTS::MoveToEntityState::Execute(const GameState& gameState, GameSimulationS
 {
 	const CE::Registry& reg = gameState.GetWorld().GetRegistry();
 
-	auto transformView = reg.View<CE::TransformComponent>();
+	auto transformView = reg.View<CE::TransformedDiskColliderComponent>();
 	CommandBuffer<MoveToCommand>& moveToBuffer = nextStep.GetBuffer<MoveToCommand>();
 
 	for (const MoveToEntityState& moveState : commands)
@@ -26,17 +26,17 @@ void RTS::MoveToEntityState::Execute(const GameState& gameState, GameSimulationS
 		const auto [unitTransform] = transformView.get(moveState.mUnit);
 		const auto [targetTransform] = transformView.get(moveState.mTargetEntity);
 
-		glm::vec2 currentPosition = unitTransform.GetWorldPosition();
-		glm::vec2 targetPosition = targetTransform.GetWorldPosition();
+		const glm::vec2 currentPosition = unitTransform.mCentre;
+		const glm::vec2 targetPosition = targetTransform.mCentre;
 
 		if (currentPosition == targetPosition)
 		{
 			continue;
 		}
 
-		glm::vec2 delta = targetPosition - currentPosition;
-		glm::vec2 clampedDelta = CE::Math::ClampLength(delta, 0.0f, SimulationComponent::sSimulationStepSize * 5.0f);
-		glm::vec2 nextPosition = currentPosition + clampedDelta;
+		const glm::vec2 delta = targetPosition - currentPosition;
+		const glm::vec2 clampedDelta = CE::Math::ClampLength(delta, 0.0f, SimulationComponent::sSimulationStepSize * 5.0f);
+		const glm::vec2 nextPosition = currentPosition + clampedDelta;
 
 		moveToBuffer.AddCommand(moveState.mUnit, nextPosition);
 	}
