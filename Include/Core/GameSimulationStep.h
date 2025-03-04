@@ -7,8 +7,7 @@ namespace RTS
 {
 	// Could also be a "using GameStep = ...", but now we can forward declare GameStep
 	class GameSimulationStep final :
-		public GameStepBase<MoveToCommand, SpawnUnitCommand>
+		public GameStepBase<SpawnUnitCommand, MoveToCommand>
 	{
-	public:
 	};
 }
