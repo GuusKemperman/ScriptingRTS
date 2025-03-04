@@ -224,6 +224,7 @@
   <ItemGroup>
     <ClCompile Include="Source\Commands\MoveToCommand.cpp" />
     <ClCompile Include="Source\Commands\SpawnUnitCommand.cpp" />
+    <ClCompile Include="Source\Components\RenderingComponent.cpp" />
     <ClCompile Include="Source\Components\SimulationComponent.cpp" />
     <ClCompile Include="Source\Core\GameEvaluateStep.cpp" />
     <ClCompile Include="Source\Core\GameState.cpp" />
@@ -236,11 +237,13 @@
     </ClCompile>
     <ClCompile Include="Source\Core\ScriptingAPI.cpp" />
     <ClCompile Include="Source\States\MoveToEntityState.cpp" />
+    <ClCompile Include="Source\Systems\RenderingSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Commands\CommandBuffer.h" />
     <ClInclude Include="Include\Commands\MoveToCommand.h" />
     <ClInclude Include="Include\Commands\SpawnUnitCommand.h" />
+    <ClInclude Include="Include\Components\RenderingComponent.h" />
     <ClInclude Include="Include\Components\SimulationComponent.h" />
     <ClInclude Include="Include\Core\GameEvaluateStep.h" />
     <ClInclude Include="Include\Core\GameSimulationStep.h" />
@@ -249,6 +252,7 @@
     <ClInclude Include="Include\Core\ScriptingAPI.h" />
     <ClInclude Include="Include\ScriptingRTS\Precomp.h" />
     <ClInclude Include="Include\States\MoveToEntityState.h" />
+    <ClInclude Include="Include\Systems\RenderingSystem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -15,10 +15,11 @@ namespace RTS
 		CE::World& GetWorld() { return mWorld; }
 		const CE::World& GetWorld() const { return mWorld; }
 
+		uint32 GetNumStepsCompleted() const { return mNumStepsCompleted; }
+
 	private:
 		CE::World mWorld{ false };
 		uint32 mNumStepsCompleted{};
-		uint32 mScore{};
 	};
 }
 

@@ -1,7 +1,9 @@
 #include "Precomp.h"
 #include "Components/SimulationComponent.h"
 
+#include "Components/RenderingComponent.h"
 #include "Core/ScriptingAPI.h"
+#include "Systems/RenderingSystem.h"
 #include "Utilities/Reflect/ReflectComponentType.h"
 #include "World/EventManager.h"
 
@@ -15,8 +17,17 @@ namespace
 	};
 }
 
-void RTS::SimulationComponent::OnBeginPlay([[maybe_unused]] CE::World& viewportWorld, entt::entity)
+void RTS::SimulationComponent::OnBeginPlay(CE::World& viewportWorld, entt::entity)
 {
+	if (!viewportWorld.GetRegistry().Storage<RenderingComponent>().empty())
+	{
+		mOnStepCompletedCallback = 
+			[renderer = &viewportWorld.AddSystem<RenderingSystem>()](const GameSimulationStep& step)
+			{
+				renderer->RecordStep(step);
+			};
+	}
+
 	mThread = std::jthread{ [this](const std::stop_token& token) { SimulateThread(token); } };
 }
 
