@@ -237,6 +237,7 @@
     </ClCompile>
     <ClCompile Include="Source\Core\ScriptingAPI.cpp" />
     <ClCompile Include="Source\States\MoveToEntityState.cpp" />
+    <ClCompile Include="Source\States\MoveToPositionState.cpp" />
     <ClCompile Include="Source\Systems\RenderingSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -252,6 +253,7 @@
     <ClInclude Include="Include\Core\ScriptingAPI.h" />
     <ClInclude Include="Include\ScriptingRTS\Precomp.h" />
     <ClInclude Include="Include\States\MoveToEntityState.h" />
+    <ClInclude Include="Include\States\MoveToPositionState.h" />
     <ClInclude Include="Include\Systems\RenderingSystem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

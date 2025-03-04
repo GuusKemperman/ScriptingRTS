@@ -24,9 +24,14 @@ namespace
 	}
 }
 
-void RTS::RTS::MoveTo(CE::World& world, entt::entity unit, entt::entity target)
+void RTS::RTS::MoveToEntity(CE::World& world, entt::entity unit, entt::entity target)
 {
 	EnterState<MoveToEntityState>(world, unit, target);
+}
+
+void RTS::RTS::MoveToPosition(CE::World& world, entt::entity unit, glm::vec2 target)
+{
+	EnterState<MoveToPositionState>(world, unit, target);
 }
 
 CE::MetaType RTS::RTS::Reflect()
@@ -34,11 +39,17 @@ CE::MetaType RTS::RTS::Reflect()
 	CE::MetaType metaType{ CE::MetaType::T<RTS>{}, "RTS" };
 	metaType.GetProperties().Add(CE::Props::sIsScriptableTag);
 
-	metaType.AddFunc(&RTS::MoveTo, 
-		"MoveTo",
+	metaType.AddFunc(&RTS::MoveToEntity, 
+		"MoveToEntity",
 		"World",
 		"UnitToMove",
 		"TargetEntity").GetProperties().Add(CE::Props::sIsScriptableTag);
+
+	metaType.AddFunc(&RTS::MoveToPosition,
+		"MoveToPosition",
+		"World",
+		"UnitToMove",
+		"TargetPosition").GetProperties().Add(CE::Props::sIsScriptableTag);
 
 	return metaType;
 }

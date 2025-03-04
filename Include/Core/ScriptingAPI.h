@@ -15,7 +15,9 @@ namespace RTS
 
 	struct RTS
 	{
-		static void MoveTo(CE::World& world, entt::entity unit, entt::entity target);
+		static void MoveToEntity(CE::World& world, entt::entity unit, entt::entity target);
+
+		static void MoveToPosition(CE::World& world, entt::entity unit, glm::vec2 target);
 
 	private:
 		friend CE::ReflectAccess;
