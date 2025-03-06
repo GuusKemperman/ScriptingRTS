@@ -53,7 +53,7 @@ void RTS::RenderingSystem::Render(const CE::World& viewportWorld, CE::RenderComm
 		static_cast<float>(mCurrentState->GetNumStepsCompleted()) + 1.f);
 
 	const float interpolationFactor = glm::clamp(
-		fmodf(totalTimePassed, SimulationComponent::sEvaluateStepSize) * (1.0f / SimulationComponent::sEvaluateStepSize),
+		fmodf(totalTimePassed, SimulationComponent::sSimulationStepSize) * (1.0f / SimulationComponent::sSimulationStepSize),
 		0.0f, 1.0f);
 
 	const CE::World& prevWorld = mPreviousState->GetWorld();
@@ -139,7 +139,7 @@ void RTS::RenderingSystem::StepToCorrectGameState(CE::World& viewportWorld, floa
 			}
 		};
 
-	int currRequiredNumSteps = glm::clamp(static_cast<int>(renderingComponent.mTimeStamp),
+	int currRequiredNumSteps = glm::clamp(static_cast<int>(renderingComponent.mTimeStamp / SimulationComponent::sSimulationStepSize),
 		1,
 		static_cast<int>(mRenderingQueue.size()));
 

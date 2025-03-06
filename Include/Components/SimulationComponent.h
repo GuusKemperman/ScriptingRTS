@@ -16,8 +16,8 @@ namespace RTS
 	class SimulationComponent
 	{
 	public:
-		static constexpr uint32 sNumSimulationStepsBetweenEvaluate = 5;
-		static constexpr float sSimulationStepSize = .2f;
+		static constexpr uint32 sNumSimulationStepsBetweenEvaluate = 10;
+		static constexpr float sSimulationStepSize = .1f;
 		static constexpr float sSimulationDurationSeconds = 3600.0f;
 
 		static constexpr float sEvaluateStepSize = sNumSimulationStepsBetweenEvaluate * sSimulationStepSize;

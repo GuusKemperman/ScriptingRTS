@@ -6,6 +6,7 @@
 #include "Systems/RenderingSystem.h"
 #include "Utilities/Reflect/ReflectComponentType.h"
 #include "World/EventManager.h"
+#include "World/Physics.h"
 
 namespace
 {
@@ -67,7 +68,7 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 	{ // TODO replace hardcoding of spawning of units
 		for (uint32 i = 0; i < mStartingTotalNumOfUnits; i++)
 		{
-			glm::vec2 pos = glm::vec2{ 25.0f } *static_cast<float>(i);
+			glm::vec2 pos = glm::vec2{ 5.0f,0.0f } *static_cast<float>(i);
 			mSimulateStep.AddCommand(SpawnUnitCommand{ pos });
 		}
 		mCurrentState.Step(mSimulateStep);
@@ -94,13 +95,22 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 
 			mSimulateStep.ForEachCommandBuffer(clearBuffers);
 
-			// TODO Physics
-
 			mEvaluateStep.GenerateCommandsFromEvaluations(mCurrentState, mSimulateStep);
 			mCurrentState.Step(mSimulateStep);
 
+			CE::Physics& physics = mCurrentState.GetWorld().GetPhysics();
+			physics.UpdateBVHs({ .mForceRebuild = true });
+			physics.ResolveCollisions();
+
 			if (mOnStepCompletedCallback)
 			{
+				CommandBuffer<MoveToCommand>& moveToBuffer = mSimulateStep.GetBuffer<MoveToCommand>();
+
+				moveToBuffer.Clear();
+				for (auto [entity, disk] : world.GetRegistry().View<CE::TransformedDiskColliderComponent>().each())
+				{
+					moveToBuffer.AddCommand(entity, disk.mCentre);
+				}
 				mOnStepCompletedCallback(mSimulateStep);
 			}
 		}
