@@ -32,6 +32,20 @@ namespace RTS
 
 		~CommandBuffer() = default;
 
+		bool operator==(const CommandBuffer& other) const
+		{
+			auto stored = GetStoredCommands();
+			auto otherStored = other.GetStoredCommands();
+
+			return std::equal(stored.begin(), stored.end(), 
+				otherStored.begin(), otherStored.end());
+		}
+
+		bool operator!=(const CommandBuffer& other) const
+		{
+			return !(*this == other);
+		}
+
 		template<typename... Args>
 		void AddCommand(Args&&... args);
 

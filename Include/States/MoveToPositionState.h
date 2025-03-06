@@ -24,8 +24,8 @@ namespace RTS
 			entt::entity unit,
 			glm::vec2 targetPosition);
 
-
-
+		bool operator==(const MoveToPositionState&) const = default;
+		bool operator!=(const MoveToPositionState&) const = default;
 
 		entt::entity mUnit = entt::null;
 		glm::vec2 mTargetPosition{};

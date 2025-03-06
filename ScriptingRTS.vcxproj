@@ -239,6 +239,7 @@
     <ClCompile Include="Source\States\MoveToEntityState.cpp" />
     <ClCompile Include="Source\States\MoveToPositionState.cpp" />
     <ClCompile Include="Source\Systems\RenderingSystem.cpp" />
+    <ClCompile Include="Source\UnitTests\DeterminismTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Commands\CommandBuffer.h" />

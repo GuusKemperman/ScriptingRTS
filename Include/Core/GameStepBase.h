@@ -10,6 +10,9 @@ namespace RTS
 	class GameStepBase<>
 	{
 	public:
+		bool operator==(const GameStepBase&) const { return true; }
+		bool operator!=(const GameStepBase&) const { return false; }
+
 		void AddCommand() = delete;
 
 		template<typename... Args>
@@ -26,6 +29,17 @@ namespace RTS
 
 	public:
 		using Base::AddCommand;
+		using Base::operator==;
+
+		bool operator==(const GameStepBase& other) const
+		{
+			return mBuffer == other.mBuffer && Base::operator==(static_cast<const Base&>(other));
+		}
+
+		bool operator!=(const GameStepBase& other) const
+		{
+			return mBuffer != other.mBuffer || Base::operator!=(static_cast<const Base&>(other));
+		}
 
 		void AddCommand(T&& command)
 		{

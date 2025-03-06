@@ -26,6 +26,10 @@ namespace RTS
 
 		void OnBeginPlay(CE::World& world, entt::entity owner);
 
+		void StartSimulation(std::function<void(const GameSimulationStep&)> onStepCompleted = {});
+
+		void WaitForComplete();
+
 		GameSimulationStep& GetNextSimulationStep() { return mSimulateStep; }
 		const GameSimulationStep& GetNextSimulationStep() const { return mSimulateStep; }
 

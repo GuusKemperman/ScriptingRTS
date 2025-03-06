@@ -18,6 +18,9 @@ namespace RTS
 			entt::entity unit, 
 			entt::entity targetEntity);
 
+		bool operator==(const MoveToEntityState&) const = default;
+		bool operator!=(const MoveToEntityState&) const = default;
+
 		entt::entity mUnit = entt::null;
 		entt::entity mTargetEntity = entt::null;
 	};

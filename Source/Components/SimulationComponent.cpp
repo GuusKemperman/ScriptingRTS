@@ -20,16 +20,28 @@ namespace
 
 void RTS::SimulationComponent::OnBeginPlay(CE::World& viewportWorld, entt::entity)
 {
+	std::function<void(const GameSimulationStep&)> callback{};
 	if (!viewportWorld.GetRegistry().Storage<RenderingComponent>().empty())
 	{
-		mOnStepCompletedCallback = 
+		callback =
 			[renderer = &viewportWorld.AddSystem<RenderingSystem>()](const GameSimulationStep& step)
 			{
 				renderer->RecordStep(step);
 			};
 	}
 
+	StartSimulation(std::move(callback));
+}
+
+void RTS::SimulationComponent::StartSimulation(std::function<void(const GameSimulationStep&)> onStepCompleted)
+{
+	mOnStepCompletedCallback = std::move(onStepCompleted);
 	mThread = std::jthread{ [this](const std::stop_token& token) { SimulateThread(token); } };
+}
+
+void RTS::SimulationComponent::WaitForComplete()
+{
+	mThread.join();
 }
 
 const RTS::SimulationComponent* RTS::SimulationComponent::TryGetOwningSimulationComponent(const CE::World& ownedWorld)
@@ -92,7 +104,7 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 		CE::World& world = mCurrentState.GetWorld();
 
 		mEvaluateStep.ForEachCommandBuffer(clearBuffers);
-		world.GetEventManager().InvokeEventsForAllComponents(sOnUnitEvaluate);
+		world.GetEventManager().InvokeEventsForAllComponents<true>(sOnUnitEvaluate);
 
 		for (int simulateStepNum = 0; simulateStepNum < sNumSimulationStepsBetweenEvaluate; simulateStepNum++)
 		{
@@ -107,7 +119,7 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 			mCurrentState.Step(mSimulateStep);
 
 			CE::Physics& physics = mCurrentState.GetWorld().GetPhysics();
-			physics.UpdateBVHs({ .mForceRebuild = true });
+			physics.UpdateBVHs({ .mForceRebuild = evaluateStepNum == 0 });
 			physics.ResolveCollisions();
 
 			if (mOnStepCompletedCallback)

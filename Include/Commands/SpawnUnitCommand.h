@@ -10,6 +10,9 @@ namespace RTS
 	public:
 		static void Execute(GameState& state, std::span<const SpawnUnitCommand> commands);
 
+		bool operator==(const SpawnUnitCommand&) const = default;
+		bool operator!=(const SpawnUnitCommand&) const = default;
+
 		glm::vec2 mPosition{};
 		TeamId mTeamId{};
 	};
