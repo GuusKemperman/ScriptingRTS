@@ -1,4 +1,5 @@
 #pragma once
+#include "Components/TeamTag.h"
 
 namespace RTS
 {
@@ -10,5 +11,6 @@ namespace RTS
 		static void Execute(GameState& state, std::span<const SpawnUnitCommand> commands);
 
 		glm::vec2 mPosition{};
+		TeamId mTeamId{};
 	};
 }

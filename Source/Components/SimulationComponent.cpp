@@ -66,11 +66,19 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 	mSimulateStep.ForEachCommandBuffer(reserveBuffers, static_cast<size_t>(mStartingTotalNumOfUnits));
 
 	{ // TODO replace hardcoding of spawning of units
-		for (uint32 i = 0; i < mStartingTotalNumOfUnits; i++)
-		{
-			glm::vec2 pos = glm::vec2{ 5.0f,0.0f } *static_cast<float>(i);
-			mSimulateStep.AddCommand(SpawnUnitCommand{ pos });
-		}
+
+		auto spawnUnitsForTeam = [&](float offsetMul, TeamId team)
+			{
+				for (uint32 i = 0; i < mStartingTotalNumOfUnits / 2; i++)
+				{
+					glm::vec2 pos = offsetMul * glm::vec2{ 1.4f } * static_cast<float>(i + 10);
+					mSimulateStep.AddCommand(SpawnUnitCommand{ pos, team });
+				}
+			};
+
+		spawnUnitsForTeam(1.0f, TeamId::Team1);
+		spawnUnitsForTeam(-1.0f, TeamId::Team2);
+
 		mCurrentState.Step(mSimulateStep);
 
 		if (mOnStepCompletedCallback)

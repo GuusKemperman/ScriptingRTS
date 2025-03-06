@@ -38,7 +38,7 @@ namespace RTS
 		static const SimulationComponent* TryGetOwningSimulationComponent(const CE::World& ownedWorld);
 		static SimulationComponent* TryGetOwningSimulationComponent(CE::World& ownedWorld);
 
-		uint32 mStartingTotalNumOfUnits = 1;
+		uint32 mStartingTotalNumOfUnits = 2;
 
 	private:
 		void SimulateThread(const std::stop_token& stop);

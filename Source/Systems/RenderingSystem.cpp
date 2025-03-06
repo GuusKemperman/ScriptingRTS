@@ -48,7 +48,6 @@ void RTS::RenderingSystem::Render(const CE::World& viewportWorld, CE::RenderComm
 		return;
 	}
 
-
 	const float totalTimePassed = glm::min(renderingComponent.mTimeStamp, 
 		static_cast<float>(mCurrentState->GetNumStepsCompleted()) + 1.f);
 
@@ -59,12 +58,12 @@ void RTS::RenderingSystem::Render(const CE::World& viewportWorld, CE::RenderComm
 	const CE::World& prevWorld = mPreviousState->GetWorld();
 	const CE::World& currWorld = mCurrentState->GetWorld();
 
-	auto prevView = prevWorld.GetRegistry().View<CE::TransformedDiskColliderComponent>();
-	auto currView = currWorld.GetRegistry().View<CE::TransformedDiskColliderComponent>();
+	auto prevView = prevWorld.GetRegistry().View<CE::TransformedDiskColliderComponent, TeamId>();
+	auto currView = currWorld.GetRegistry().View<CE::TransformedDiskColliderComponent, TeamId>();
 	float height = 0.0f;
-	float heightStep = 1.0f / static_cast<float>(currView.size());
+	float heightStep = 1.0f / static_cast<float>(currView.size_hint());
 
-	for (auto [entity, currDisk] : currView.each())
+	for (auto [entity, currDisk, team] : currView.each())
 	{
 		float renderHeight = height;
 		height += heightStep;
@@ -73,6 +72,10 @@ void RTS::RenderingSystem::Render(const CE::World& viewportWorld, CE::RenderComm
 		{
 			continue;
 		}
+
+		const glm::vec4 col = renderingComponent.mDisplayForTeam == team
+			? renderingComponent.mFriendlyColour
+			: renderingComponent.mEnemyColour;
 
 		const CE::TransformedDiskColliderComponent& prevDisk = prevView.get<CE::TransformedDiskColliderComponent>(entity);
 
@@ -106,7 +109,7 @@ void RTS::RenderingSystem::Render(const CE::World& viewportWorld, CE::RenderComm
 			mMesh,
 			mMat,
 			worldMat,
-			glm::vec4{ 1.0f },
+			col,
 			glm::vec4{ 0.0f });
 	}
 }

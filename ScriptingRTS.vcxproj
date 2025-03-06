@@ -246,6 +246,7 @@
     <ClInclude Include="Include\Commands\SpawnUnitCommand.h" />
     <ClInclude Include="Include\Components\RenderingComponent.h" />
     <ClInclude Include="Include\Components\SimulationComponent.h" />
+    <ClInclude Include="Include\Components\TeamTag.h" />
     <ClInclude Include="Include\Core\GameEvaluateStep.h" />
     <ClInclude Include="Include\Core\GameSimulationStep.h" />
     <ClInclude Include="Include\Core\GameState.h" />

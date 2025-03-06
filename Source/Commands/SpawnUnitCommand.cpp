@@ -12,6 +12,9 @@ void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitC
 
 	auto& transformStorage = reg.Storage<CE::TransformedDiskColliderComponent>();
 	auto& physicsStorage = reg.Storage<CE::PhysicsBody2DComponent>();
+	auto& teamStorage = reg.Storage<TeamId>();
+	auto& team1Storage = reg.Storage<Team1Tag>();
+	auto& team2Storage = reg.Storage<Team2Tag>();
 
 	const CE::MetaType* playerScript = CE::MetaManager::Get().TryGetType("S_Unit");
 
@@ -32,5 +35,15 @@ void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitC
 
 		physicsStorage.emplace(entity).mRules = rules;
 		transformStorage.emplace(entity, command.mPosition, 1.0f);
+		teamStorage.emplace(entity, command.mTeamId);
+
+		if (command.mTeamId == TeamId::Team1)
+		{
+			team1Storage.emplace(entity);
+		}
+		else if (command.mTeamId == TeamId::Team2)
+		{
+			team2Storage.emplace(entity);
+		}
 	}
 }
