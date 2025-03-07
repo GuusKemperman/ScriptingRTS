@@ -84,7 +84,7 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 				for (uint32 i = 0; i < mStartingTotalNumOfUnits / 2; i++)
 				{
 					glm::vec2 pos = offsetMul * glm::vec2{ 1.4f } * static_cast<float>(i + 10);
-					mSimulateStep.AddCommand(SpawnUnitCommand{ pos, team });
+					mSimulateStep.AddCommand(SpawnUnitCommand{ pos, team, UnitType::Tank });
 				}
 			};
 

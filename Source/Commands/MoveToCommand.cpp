@@ -22,11 +22,12 @@ void RTS::MoveToCommand::Execute(GameState& state, std::span<const MoveToCommand
 
 void RTS::MoveToCommand::AddMoveTowardsPositionCommand(
 	const entt::storage_for_t<CE::TransformedDiskColliderComponent>& transformStorage,
+	const entt::storage_for_t<UnitType::Enum>& unitStorage,
 	CommandBuffer<MoveToCommand>& moveCommandBuffer,
 	entt::entity unit,
 	glm::vec2 targetPosition)
 {
-	if (!transformStorage.contains(unit))
+	if (!unitStorage.contains(unit))
 	{
 		return;
 	}
@@ -39,8 +40,9 @@ void RTS::MoveToCommand::AddMoveTowardsPositionCommand(
 		return;
 	}
 
+	const float movementSpeed = GetUnitProperty<&UnitType::mMovementSpeed>(unitStorage.get(unit));
 	const glm::vec2 delta = targetPosition - currentPosition;
-	const glm::vec2 clampedDelta = CE::Math::ClampLength(delta, 0.0f, SimulationComponent::sSimulationStepSize * 4.0f);
+	const glm::vec2 clampedDelta = CE::Math::ClampLength(delta, 0.0f, SimulationComponent::sSimulationStepSize * movementSpeed);
 	const glm::vec2 nextPosition = currentPosition + clampedDelta;
 
 	moveCommandBuffer.AddCommand(unit, nextPosition);

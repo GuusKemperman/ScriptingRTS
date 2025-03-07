@@ -14,8 +14,10 @@ void RTS::MoveToPositionState::Execute(const GameState& gameState, GameSimulatio
 	const CE::Registry& reg = gameState.GetWorld().GetRegistry();
 
 	auto* diskStorage = reg.Storage<CE::TransformedDiskColliderComponent>();
+	auto* unitStorage = reg.Storage<UnitType::Enum>();
 
-	if (diskStorage == nullptr)
+	if (diskStorage == nullptr
+		|| unitStorage == nullptr)
 	{
 		return;
 	}
@@ -25,6 +27,7 @@ void RTS::MoveToPositionState::Execute(const GameState& gameState, GameSimulatio
 	for (const MoveToPositionState& moveState : commands)
 	{
 		MoveToCommand::AddMoveTowardsPositionCommand(*diskStorage,
+			*unitStorage,
 			moveToBuffer,
 			moveState.mUnit,
 			moveState.mTargetPosition);

@@ -1,5 +1,6 @@
 #pragma once
 #include "Components/TeamTag.h"
+#include "Core/UnitTypes.h"
 
 namespace RTS
 {
@@ -15,5 +16,6 @@ namespace RTS
 
 		glm::vec2 mPosition{};
 		TeamId mTeamId{};
+		UnitType::Enum mUnitType{};
 	};
 }
