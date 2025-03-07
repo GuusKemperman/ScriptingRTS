@@ -1,4 +1,5 @@
 #pragma once
+#include "UnitFilter.h"
 #include "Utilities/Events.h"
 
 namespace RTS
@@ -18,6 +19,8 @@ namespace RTS
 		static void MoveToEntity(CE::World& world, entt::entity unit, entt::entity target);
 
 		static void MoveToPosition(CE::World& world, entt::entity unit, glm::vec2 target);
+
+		static entt::entity FindEntity(const CE::World& world, entt::entity unit, UnitFilter filter);
 
 	private:
 		friend CE::ReflectAccess;

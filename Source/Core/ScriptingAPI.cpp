@@ -34,6 +34,12 @@ void RTS::RTS::MoveToPosition(CE::World& world, entt::entity unit, glm::vec2 tar
 	EnterState<MoveToPositionState>(world, unit, target);
 }
 
+entt::entity RTS::RTS::FindEntity(const CE::World& world, entt::entity unit, UnitFilter filter)
+{
+	filter.mRequestedByUnit = unit;
+	return filter(world);
+}
+
 CE::MetaType RTS::RTS::Reflect()
 {
 	CE::MetaType metaType{ CE::MetaType::T<RTS>{}, "RTS" };
@@ -50,6 +56,12 @@ CE::MetaType RTS::RTS::Reflect()
 		"World",
 		"UnitToMove",
 		"TargetPosition").GetProperties().Add(CE::Props::sIsScriptableTag);
+
+	metaType.AddFunc(&RTS::FindEntity,
+		"FindEntity",
+		"World",
+		"FromUnit",
+		"Filter").GetProperties().Add(CE::Props::sIsScriptableTag).Set(CE::Props::sIsScriptPure, true);
 
 	return metaType;
 }

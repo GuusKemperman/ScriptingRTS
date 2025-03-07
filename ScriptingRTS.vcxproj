@@ -236,6 +236,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Source\Core\ScriptingAPI.cpp" />
+    <ClCompile Include="Source\Core\UnitFilter.cpp" />
     <ClCompile Include="Source\States\MoveToEntityState.cpp" />
     <ClCompile Include="Source\States\MoveToPositionState.cpp" />
     <ClCompile Include="Source\Systems\RenderingSystem.cpp" />
@@ -254,6 +255,7 @@
     <ClInclude Include="Include\Core\GameState.h" />
     <ClInclude Include="Include\Core\GameStepBase.h" />
     <ClInclude Include="Include\Core\ScriptingAPI.h" />
+    <ClInclude Include="Include\Core\UnitFilter.h" />
     <ClInclude Include="Include\Core\UnitTypes.h" />
     <ClInclude Include="Include\ScriptingRTS\Precomp.h" />
     <ClInclude Include="Include\States\MoveToEntityState.h" />
