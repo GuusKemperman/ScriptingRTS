@@ -16,14 +16,6 @@ namespace RTS
 	class SimulationComponent
 	{
 	public:
-		static constexpr uint32 sNumSimulationStepsBetweenEvaluate = 10;
-		static constexpr float sSimulationStepSize = .1f;
-		static constexpr float sSimulationDurationSeconds = 3600.0f;
-
-		static constexpr float sEvaluateStepSize = sNumSimulationStepsBetweenEvaluate * sSimulationStepSize;
-		static constexpr uint32 sTotalNumEvaluateSteps = static_cast<uint32>(sSimulationDurationSeconds / sEvaluateStepSize);
-		static constexpr uint32 sTotalNumSimulationSteps = static_cast<uint32>(sSimulationDurationSeconds / sSimulationStepSize);
-
 		void OnBeginPlay(CE::World& world, entt::entity owner);
 
 		void StartSimulation(std::function<void(const GameSimulationStep&)> onStepCompleted = {});

@@ -29,10 +29,10 @@ UNIT_TEST(Determinism, EqualSteps)
 
 	for (auto& [sim, steps] : simulations)
 	{
-		TEST_ASSERT(steps.size() == RTS::SimulationComponent::sTotalNumSimulationSteps);
+		TEST_ASSERT(steps.size() == RTS::Constants::sTotalNumSimulationSteps);
 	}
 
-	for (uint32 i = 0; i < RTS::SimulationComponent::sTotalNumSimulationSteps; i++)
+	for (uint32 i = 0; i < RTS::Constants::sTotalNumSimulationSteps; i++)
 	{
 		for (size_t j = 1; j < simulations.size(); j++)
 		{

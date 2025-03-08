@@ -41,6 +41,10 @@ namespace RTS
 
 		static entt::entity FindEntity(UnitFilter filter);
 
+		static void ShootAt(entt::entity target);
+
+		static float GetDistance(entt::entity entity);
+
 	private:
 		friend CE::ReflectAccess;
 		static CE::MetaType Reflect();

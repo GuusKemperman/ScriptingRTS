@@ -1,9 +1,12 @@
 #include "Precomp.h"
 #include "Core/ScriptingAPI.h"
 
+#include "Components/Physics2D/DiskColliderComponent.h"
 #include "Core/GameState.h"
 #include "States/MoveToEntityState.h"
 #include "States/MoveToPositionState.h"
+#include "States/ShootAtEntityState.h"
+#include "World/Registry.h"
 
 namespace
 {
@@ -49,6 +52,26 @@ entt::entity RTS::RTSAPI::FindEntity(UnitFilter filter)
 	return filter(sTarget.sCurrentState->GetWorld());
 }
 
+void RTS::RTSAPI::ShootAt(entt::entity target)
+{
+	EnterState<ShootAtEntityState>(target);
+}
+
+float RTS::RTSAPI::GetDistance(entt::entity entity)
+{
+	CheckTarget();
+
+	auto* diskStorage = sTarget.sCurrentState->GetWorld().GetRegistry().Storage<CE::TransformedDiskColliderComponent>();
+
+	if (diskStorage == nullptr
+		|| !diskStorage->contains(entity))
+	{
+		return std::numeric_limits<float>::infinity();
+	}
+
+	return glm::distance(diskStorage->get(sTarget.sCurrentUnit).mCentre, diskStorage->get(entity).mCentre);
+}
+
 CE::MetaType RTS::RTSAPI::Reflect()
 {
 	CE::MetaType metaType{ CE::MetaType::T<RTSAPI>{}, "RTS" };
@@ -62,9 +85,16 @@ CE::MetaType RTS::RTSAPI::Reflect()
 		"MoveToPosition",
 		"TargetPosition").GetProperties().Add(CE::Props::sIsScriptableTag);
 
+	metaType.AddFunc(&RTSAPI::ShootAt,
+		"ShootAt",
+		"Target").GetProperties().Add(CE::Props::sIsScriptableTag);
+
 	metaType.AddFunc(&RTSAPI::FindEntity,
 		"FindEntity",
 		"Filter").GetProperties().Add(CE::Props::sIsScriptableTag).Set(CE::Props::sIsScriptPure, true);
+
+	metaType.AddFunc(&RTSAPI::GetDistance,
+		"GetDistance").GetProperties().Add(CE::Props::sIsScriptableTag).Set(CE::Props::sIsScriptPure, true);
 
 	return metaType;
 }

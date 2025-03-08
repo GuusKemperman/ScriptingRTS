@@ -1,7 +1,9 @@
 #include "Precomp.h"
 #include "Commands/SpawnUnitCommand.h"
 
+#include "Components/HealthComponent.h"
 #include "Components/UnitTypeTag.h"
+#include "Components/WeaponComponent.h"
 #include "Components/Physics2D/DiskColliderComponent.h"
 #include "Components/Physics2D/PhysicsBody2DComponent.h"
 #include "Core/GameState.h"
@@ -13,6 +15,9 @@ void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitC
 
 	auto& transformStorage = reg.Storage<CE::TransformedDiskColliderComponent>();
 	auto& physicsStorage = reg.Storage<CE::PhysicsBody2DComponent>();
+
+	auto& weaponStorage = reg.Storage<WeaponComponent>();
+	auto& healthStorage = reg.Storage<HealthComponent>();
 
 	auto& teamStorage = reg.Storage<TeamId>();
 	auto& team1Storage = reg.Storage<Team1Tag>();
@@ -36,11 +41,13 @@ void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitC
 
 	for (const SpawnUnitCommand& command : commands)
 	{
+		const UnitType type = GetUnitType(command.mUnitType);
+
 		entt::entity entity = reg.Create();
 		reg.AddComponent(*playerScript, entity);
 
 		physicsStorage.emplace(entity).mRules = rules;
-		transformStorage.emplace(entity, command.mPosition, GetUnitProperty<&UnitType::mRadius>(command.mUnitType));
+		transformStorage.emplace(entity, command.mPosition, type.mRadius);
 
 		unitStorage.emplace(entity, command.mUnitType);
 
@@ -58,5 +65,8 @@ void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitC
 		case UnitType::Tank: tankStorage.emplace(entity); break;
 		default: ABORT;
 		}
+
+		weaponStorage.emplace(entity, type.mWeaponType);
+		healthStorage.emplace(entity, type.mHealth);
 	}
 }

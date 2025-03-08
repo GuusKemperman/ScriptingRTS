@@ -223,6 +223,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\Commands\MoveToCommand.cpp" />
+    <ClCompile Include="Source\Commands\ShootAtCommand.cpp" />
     <ClCompile Include="Source\Commands\SpawnUnitCommand.cpp" />
     <ClCompile Include="Source\Components\RenderingComponent.cpp" />
     <ClCompile Include="Source\Components\SimulationComponent.cpp" />
@@ -239,17 +240,23 @@
     <ClCompile Include="Source\Core\UnitFilter.cpp" />
     <ClCompile Include="Source\States\MoveToEntityState.cpp" />
     <ClCompile Include="Source\States\MoveToPositionState.cpp" />
+    <ClCompile Include="Source\States\ShootAtEntityState.cpp" />
     <ClCompile Include="Source\Systems\RenderingSystem.cpp" />
     <ClCompile Include="Source\UnitTests\DeterminismTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Commands\CommandBuffer.h" />
     <ClInclude Include="Include\Commands\MoveToCommand.h" />
+    <ClInclude Include="Include\Commands\ShootAtCommand.h" />
     <ClInclude Include="Include\Commands\SpawnUnitCommand.h" />
+    <ClInclude Include="Include\Components\HealthComponent.h" />
+    <ClInclude Include="Include\Components\ProjectileComponent.h" />
     <ClInclude Include="Include\Components\RenderingComponent.h" />
     <ClInclude Include="Include\Components\SimulationComponent.h" />
     <ClInclude Include="Include\Components\TeamTag.h" />
     <ClInclude Include="Include\Components\UnitTypeTag.h" />
+    <ClInclude Include="Include\Components\WeaponComponent.h" />
+    <ClInclude Include="Include\Core\Constants.h" />
     <ClInclude Include="Include\Core\GameEvaluateStep.h" />
     <ClInclude Include="Include\Core\GameSimulationStep.h" />
     <ClInclude Include="Include\Core\GameState.h" />
@@ -257,9 +264,11 @@
     <ClInclude Include="Include\Core\ScriptingAPI.h" />
     <ClInclude Include="Include\Core\UnitFilter.h" />
     <ClInclude Include="Include\Core\UnitTypes.h" />
+    <ClInclude Include="Include\Core\WeaponTypes.h" />
     <ClInclude Include="Include\ScriptingRTS\Precomp.h" />
     <ClInclude Include="Include\States\MoveToEntityState.h" />
     <ClInclude Include="Include\States\MoveToPositionState.h" />
+    <ClInclude Include="Include\States\ShootAtEntityState.h" />
     <ClInclude Include="Include\Systems\RenderingSystem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

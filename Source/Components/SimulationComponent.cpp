@@ -112,14 +112,14 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 		}
 	}
 
-	for (int evaluateStepNum = 0; evaluateStepNum < sTotalNumEvaluateSteps; evaluateStepNum++)
+	for (int evaluateStepNum = 0; evaluateStepNum < Constants::sTotalNumEvaluateSteps; evaluateStepNum++)
 	{
 		CE::World& world = mCurrentState.GetWorld();
 
 		mEvaluateStep.ForEachCommandBuffer(clearBuffers);
 		InvokeEvaluateEvents();
 
-		for (int simulateStepNum = 0; simulateStepNum < sNumSimulationStepsBetweenEvaluate; simulateStepNum++)
+		for (int simulateStepNum = 0; simulateStepNum < Constants::sNumSimulationStepsBetweenEvaluate; simulateStepNum++)
 		{
 			if (stop.stop_requested())
 			{

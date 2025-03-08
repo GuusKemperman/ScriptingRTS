@@ -42,7 +42,7 @@ void RTS::MoveToCommand::AddMoveTowardsPositionCommand(
 
 	const float movementSpeed = GetUnitProperty<&UnitType::mMovementSpeed>(unitStorage.get(unit));
 	const glm::vec2 delta = targetPosition - currentPosition;
-	const glm::vec2 clampedDelta = CE::Math::ClampLength(delta, 0.0f, SimulationComponent::sSimulationStepSize * movementSpeed);
+	const glm::vec2 clampedDelta = CE::Math::ClampLength(delta, 0.0f, Constants::sSimulationStepSize * movementSpeed);
 	const glm::vec2 nextPosition = currentPosition + clampedDelta;
 
 	moveCommandBuffer.AddCommand(unit, nextPosition);

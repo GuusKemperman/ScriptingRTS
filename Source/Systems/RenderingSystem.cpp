@@ -2,6 +2,7 @@
 #include "Systems/RenderingSystem.h"
 
 #include "Components/CameraComponent.h"
+#include "Components/ProjectileComponent.h"
 #include "Components/RenderingComponent.h"
 #include "Components/SimulationComponent.h"
 #include "Components/TransformComponent.h"
@@ -52,7 +53,7 @@ void RTS::RenderingSystem::Render(const CE::World& viewportWorld, CE::RenderComm
 		static_cast<float>(mCurrentState->GetNumStepsCompleted()) + 1.f);
 
 	const float interpolationFactor = glm::clamp(
-		fmodf(totalTimePassed, SimulationComponent::sSimulationStepSize) * (1.0f / SimulationComponent::sSimulationStepSize),
+		fmodf(totalTimePassed, Constants::sSimulationStepSize) * (1.0f / Constants::sSimulationStepSize),
 		0.0f, 1.0f);
 
 	const CE::World& prevWorld = mPreviousState->GetWorld();
@@ -112,6 +113,17 @@ void RTS::RenderingSystem::Render(const CE::World& viewportWorld, CE::RenderComm
 			col,
 			glm::vec4{ 0.0f });
 	}
+
+	for (auto [entity, proj] : currWorld.GetRegistry().View<ProjectileComponent>().each())
+	{
+		CE::AddDebugLine(
+			renderQueue,
+			CE::DebugDraw::Gameplay,
+			CE::To3D(proj.mSourcePosition),
+			CE::To3D(proj.mTargetPosition),
+			glm::vec4{ 0.0f, 1.0f, 0.0f, 1.0f });
+	}
+
 }
 
 void RTS::RenderingSystem::StepToCorrectGameState(CE::World& viewportWorld, float dt)
@@ -142,7 +154,7 @@ void RTS::RenderingSystem::StepToCorrectGameState(CE::World& viewportWorld, floa
 			}
 		};
 
-	int currRequiredNumSteps = glm::clamp(static_cast<int>(renderingComponent.mTimeStamp / SimulationComponent::sSimulationStepSize),
+	int currRequiredNumSteps = glm::clamp(static_cast<int>(renderingComponent.mTimeStamp / Constants::sSimulationStepSize),
 		1,
 		static_cast<int>(mRenderingQueue.size()));
 
