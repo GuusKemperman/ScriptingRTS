@@ -94,10 +94,13 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 
 		auto spawnUnitsForTeam = [&](float offsetMul, TeamId team)
 			{
-				for (uint32 i = 0; i < mStartingTotalNumOfUnits / 2; i++)
+				for (uint32 x = 10, numSpawned = 0; numSpawned < mStartingTotalNumOfUnits / 2; x++)
 				{
-					glm::vec2 pos = offsetMul * glm::vec2{ 1.4f } * static_cast<float>(i + 10);
-					mSimulateStep.AddCommand(SpawnUnitCommand{ pos, team, UnitType::Tank });
+					for (uint32 y = 0; y < 16 && numSpawned < mStartingTotalNumOfUnits / 2; y++, numSpawned++)
+					{
+						glm::vec2 pos = offsetMul * glm::vec2{ 1.4f } *static_cast<glm::vec2>(glm::ivec2{ x, y });
+						mSimulateStep.AddCommand(SpawnUnitCommand{ pos, team, UnitType::Tank });
+					}
 				}
 			};
 
