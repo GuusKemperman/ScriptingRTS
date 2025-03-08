@@ -56,19 +56,14 @@ UNIT_TEST(Determinism, EqualSteps)
 				{
 					auto it2 = std::find(cpy2.begin(), cpy2.end(), *it1);
 
-					if (it2 == cpy2.end()) // Thing was present in 1, but not in 2
-					{
-						throw std::false_type{};
-					}
+					ASSERT(it2 != cpy2.end());
 
 					cpy2.erase(it2);
 					it1 = cpy1.erase(it1);
 				}
 
-				if (!cpy2.empty()) // Things were present in 2 that were not present in 1
-				{
-					throw std::false_type{};
-				}
+				ASSERT(cpy2.empty());
+
 			});
 		}
 		catch (std::false_type)
