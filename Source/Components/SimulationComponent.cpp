@@ -1,22 +1,14 @@
 #include "Precomp.h"
 #include "Components/SimulationComponent.h"
 
+#include <entt/entity/runtime_view.hpp>
+
 #include "Components/RenderingComponent.h"
 #include "Core/ScriptingAPI.h"
 #include "Systems/RenderingSystem.h"
 #include "Utilities/Reflect/ReflectComponentType.h"
 #include "World/EventManager.h"
 #include "World/Physics.h"
-
-namespace
-{
-	struct InternalSimulationSystem : CE::System
-	{
-		InternalSimulationSystem(RTS::SimulationComponent& component) : mOuterSimulationComponent(component) {}
-
-		RTS::SimulationComponent& mOuterSimulationComponent;
-	};
-}
 
 void RTS::SimulationComponent::OnBeginPlay(CE::World& viewportWorld, entt::entity)
 {
@@ -44,26 +36,47 @@ void RTS::SimulationComponent::WaitForComplete()
 	mThread.join();
 }
 
-const RTS::SimulationComponent* RTS::SimulationComponent::TryGetOwningSimulationComponent(const CE::World& ownedWorld)
+void RTS::SimulationComponent::InvokeEvaluateEvents()
 {
-	const InternalSimulationSystem* system = ownedWorld.TryGetSystem<InternalSimulationSystem>();
-
-	if (system != nullptr)
+	CE::World& world = mCurrentState.GetWorld();
+	for (const CE::BoundEvent& boundEvent : world.GetEventManager().GetBoundEvents(sOnUnitEvaluate))
 	{
-		return &system->mOuterSimulationComponent;
-	}
-	return nullptr;
-}
+		entt::sparse_set* const storage = world.GetRegistry().Storage(boundEvent.mType.get().GetTypeId());
 
-RTS::SimulationComponent* RTS::SimulationComponent::TryGetOwningSimulationComponent(CE::World& ownedWorld)
-{
-	return const_cast<SimulationComponent*>(TryGetOwningSimulationComponent(const_cast<const CE::World&>(ownedWorld)));
+		if (storage == nullptr)
+		{
+			continue;
+		}
+
+		const CE::MetaFunc& func = boundEvent.mFunc.get();
+		static constexpr std::array argForms = { CE::TypeForm::Ref, CE::TypeForm::Ref, CE::TypeForm::ConstRef };
+
+		entt::runtime_view view{};
+		view.iterate(*storage);
+
+		std::for_each(std::execution::par_unseq, view.begin(), view.end(),
+			[&](entt::entity entity)
+			{
+				std::array args{
+					CE::MetaAny{ boundEvent.mType, storage->value(entity), false },
+					CE::MetaAny{ world },
+					CE::MetaAny{ entity }
+				};
+
+				Internal::OnUnitEvaluateTarget target{
+					.sCurrentState = &mCurrentState,
+					.sNextStep = &mEvaluateStep,
+					.sCurrentUnit = entity
+				};
+				Internal::SetOnUnitEvaluateTargetForCurrentThread(target);
+
+				func.InvokeUnchecked(args, argForms);
+			});
+	}
 }
 
 void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 {
-	mCurrentState.GetWorld().AddSystem<InternalSimulationSystem>(*this);
-
 	auto clearBuffers = []<typename T>(CommandBuffer<T>&buffer)
 	{
 		buffer.Clear();
@@ -104,7 +117,7 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 		CE::World& world = mCurrentState.GetWorld();
 
 		mEvaluateStep.ForEachCommandBuffer(clearBuffers);
-		world.GetEventManager().InvokeEventsForAllComponents<true>(sOnUnitEvaluate);
+		InvokeEvaluateEvents();
 
 		for (int simulateStepNum = 0; simulateStepNum < sNumSimulationStepsBetweenEvaluate; simulateStepNum++)
 		{

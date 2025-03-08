@@ -1,66 +1,69 @@
 #include "Precomp.h"
 #include "Core/ScriptingAPI.h"
 
-#include "Components/SimulationComponent.h"
+#include "Core/GameState.h"
+#include "States/MoveToEntityState.h"
+#include "States/MoveToPositionState.h"
 
 namespace
 {
-	std::tuple<RTS::GameEvaluateStep&, const RTS::GameState&> GetStepAndState(CE::World& world)
+	thread_local RTS::Internal::OnUnitEvaluateTarget sTarget{};
+
+	void CheckTarget()
 	{
-		RTS::SimulationComponent* simulationComponent = RTS::SimulationComponent::TryGetOwningSimulationComponent(world);
-
-		ASSERT_LOG(simulationComponent != nullptr, "Tried accessing simulation functions from a world that was not part of the simulation.");
-
-		RTS::GameEvaluateStep& step = simulationComponent->GetNextEvaluateStep();
-		const RTS::GameState& state = simulationComponent->GetGameState();
-		return { step, state };
+		ASSERT_LOG(sTarget.sNextStep != nullptr
+			&& sTarget.sCurrentState != nullptr, "Tried accessing simulation functions from a world that was not part of the simulation.");
 	}
 
 	template<typename State, typename... Args>
-	void EnterState(CE::World& world, Args&&... args)
+	void EnterState(Args&&... args)
 	{
-		auto [step, state] = GetStepAndState(world);
-		State::EnterState(state, step, std::forward<Args>(args)...);
+		CheckTarget();
+
+		State::EnterState(*sTarget.sCurrentState, 
+			*sTarget.sNextStep,
+			sTarget.sCurrentUnit,
+			std::forward<Args>(args)...);
 	}
 }
 
-void RTS::RTS::MoveToEntity(CE::World& world, entt::entity unit, entt::entity target)
+void RTS::Internal::SetOnUnitEvaluateTargetForCurrentThread(OnUnitEvaluateTarget target)
 {
-	EnterState<MoveToEntityState>(world, unit, target);
+	sTarget = target;
 }
 
-void RTS::RTS::MoveToPosition(CE::World& world, entt::entity unit, glm::vec2 target)
+void RTS::RTSAPI::MoveToEntity(entt::entity target)
 {
-	EnterState<MoveToPositionState>(world, unit, target);
+	EnterState<MoveToEntityState>(target);
 }
 
-entt::entity RTS::RTS::FindEntity(const CE::World& world, entt::entity unit, UnitFilter filter)
+void RTS::RTSAPI::MoveToPosition(glm::vec2 target)
 {
-	filter.mRequestedByUnit = unit;
-	return filter(world);
+	EnterState<MoveToPositionState>(target);
 }
 
-CE::MetaType RTS::RTS::Reflect()
+entt::entity RTS::RTSAPI::FindEntity(UnitFilter filter)
 {
-	CE::MetaType metaType{ CE::MetaType::T<RTS>{}, "RTS" };
+	CheckTarget();
+	filter.mRequestedByUnit = sTarget.sCurrentUnit;
+	return filter(sTarget.sCurrentState->GetWorld());
+}
+
+CE::MetaType RTS::RTSAPI::Reflect()
+{
+	CE::MetaType metaType{ CE::MetaType::T<RTSAPI>{}, "RTS" };
 	metaType.GetProperties().Add(CE::Props::sIsScriptableTag);
 
-	metaType.AddFunc(&RTS::MoveToEntity, 
+	metaType.AddFunc(&RTSAPI::MoveToEntity,
 		"MoveToEntity",
-		"World",
-		"UnitToMove",
 		"TargetEntity").GetProperties().Add(CE::Props::sIsScriptableTag);
 
-	metaType.AddFunc(&RTS::MoveToPosition,
+	metaType.AddFunc(&RTSAPI::MoveToPosition,
 		"MoveToPosition",
-		"World",
-		"UnitToMove",
 		"TargetPosition").GetProperties().Add(CE::Props::sIsScriptableTag);
 
-	metaType.AddFunc(&RTS::FindEntity,
+	metaType.AddFunc(&RTSAPI::FindEntity,
 		"FindEntity",
-		"World",
-		"FromUnit",
 		"Filter").GetProperties().Add(CE::Props::sIsScriptableTag).Set(CE::Props::sIsScriptPure, true);
 
 	return metaType;

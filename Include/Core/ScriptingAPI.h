@@ -4,6 +4,14 @@
 
 namespace RTS
 {
+	class GameEvaluateStep;
+}
+
+namespace RTS
+{
+	class GameState;
+	class SimulationComponent;
+
 	struct OnUnitEvaluate :
 		CE::EventType<OnUnitEvaluate>
 	{
@@ -14,17 +22,28 @@ namespace RTS
 	};
 	inline OnUnitEvaluate sOnUnitEvaluate{};
 
-	struct RTS
+	namespace Internal
 	{
-		static void MoveToEntity(CE::World& world, entt::entity unit, entt::entity target);
+		struct OnUnitEvaluateTarget
+		{
+			const GameState* sCurrentState{};
+			GameEvaluateStep* sNextStep{};
+			entt::entity sCurrentUnit{};
+		};
+		void SetOnUnitEvaluateTargetForCurrentThread(OnUnitEvaluateTarget target);
+	}
 
-		static void MoveToPosition(CE::World& world, entt::entity unit, glm::vec2 target);
+	struct RTSAPI
+	{
+		static void MoveToEntity(entt::entity target);
 
-		static entt::entity FindEntity(const CE::World& world, entt::entity unit, UnitFilter filter);
+		static void MoveToPosition(glm::vec2 target);
+
+		static entt::entity FindEntity(UnitFilter filter);
 
 	private:
 		friend CE::ReflectAccess;
 		static CE::MetaType Reflect();
-		REFLECT_AT_START_UP(RTS);
+		REFLECT_AT_START_UP(RTSAPI);
 	};
 }

@@ -39,12 +39,11 @@ namespace RTS
 		GameState& GetGameState() { return mCurrentState; }
 		const GameState& GetGameState() const { return mCurrentState; }
 
-		static const SimulationComponent* TryGetOwningSimulationComponent(const CE::World& ownedWorld);
-		static SimulationComponent* TryGetOwningSimulationComponent(CE::World& ownedWorld);
-
 		uint32 mStartingTotalNumOfUnits = 2;
 
 	private:
+
+		void InvokeEvaluateEvents();
 		void SimulateThread(const std::stop_token& stop);
 
 		friend CE::ReflectAccess;
