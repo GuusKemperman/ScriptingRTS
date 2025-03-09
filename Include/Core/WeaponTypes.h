@@ -21,7 +21,7 @@ namespace RTS
 	};
 
 	static constexpr std::array<WeaponType, WeaponType::WEAPON_TYPE_COUNT> sWeaponTypes{
-		WeaponType{ .mMaxRange = 50.0f, .mDamage = 1.0f, .mFireCooldown = 1.0f, .mProjectileTimeUntilImpact = 1.0f }
+		WeaponType{ .mMaxRange = 50.0f, .mDamage = 0.5f, .mFireCooldown = .5f, .mProjectileTimeUntilImpact = .4f }
 	};
 
 	template<auto PtrToMember>

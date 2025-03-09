@@ -12,8 +12,10 @@
 #include "Core/Renderer.h"
 #include "Utilities/DrawDebugHelpers.h"
 #include "Utilities/Math.h"
+#include "Utilities/Random.h"
 #include "World/Registry.h"
 #include "World/World.h"
+
 
 RTS::RenderingSystem::RenderingSystem()
 {
@@ -114,8 +116,57 @@ void RTS::RenderingSystem::Render(const CE::World& viewportWorld, CE::RenderComm
 			glm::vec4{ 0.0f });
 	}
 
-	for (auto [entity, proj] : currWorld.GetRegistry().View<ProjectileComponent>().each())
+	for (auto [entity, proj] : prevWorld.GetRegistry().View<ProjectileComponent>().each())
 	{
+		std::default_random_engine rng{ entt::to_integral(entity) };
+		(void)rng();
+		(void)rng();
+		(void)rng();
+
+		std::uniform_real_distribution dist{ -.5f, .5f };
+		const float randomFactor = dist(rng);
+
+		std::uniform_real_distribution endOffsetRange{ -.5f, .5f };
+		glm::vec2 randomEndOffset = { endOffsetRange(rng), endOffsetRange(rng) };
+
+		const float totalTimeUntilImpact = GetWeaponProperty<&WeaponType::mProjectileTimeUntilImpact>(proj.mFiredFromWeapon);
+
+		auto getTimeAsPercentage = [=](int32 stepsUntilImpact)
+			{
+				return 1.0f - (((static_cast<float>(stepsUntilImpact) - randomFactor) * Constants::sSimulationStepSize) / totalTimeUntilImpact);
+			};
+
+		const float prevTimeAsPercentage = getTimeAsPercentage(proj.mNumStepsUntilImpact);
+		const float currTimeAsPercentage = getTimeAsPercentage(proj.mNumStepsUntilImpact - 1);
+
+		const float lerpTimeAsPercentage = CE::Math::lerp(prevTimeAsPercentage, currTimeAsPercentage, interpolationFactor);
+
+		if (lerpTimeAsPercentage < 0.0f
+			|| lerpTimeAsPercentage > 1.0f)
+		{
+			continue;
+		}
+
+		const glm::vec2 delta = proj.mTargetPosition + randomEndOffset - proj.mSourcePosition;
+		const glm::vec2 interpolatedPos = proj.mSourcePosition + delta * lerpTimeAsPercentage;
+		const float interpolatedAngle = CE::Math::Vec2ToAngle(delta);
+
+		glm::vec3 orientationEuler{};
+		orientationEuler[CE::Axis::Up] = interpolatedAngle - glm::pi<float>();
+		glm::quat interpolatedRot{ orientationEuler };
+
+		const glm::mat4 worldMat =
+			CE::TransformComponent::ToMatrix(CE::To3D(interpolatedPos, 2.0f),
+				glm::vec3{ .2f, .05f, 1.0f },
+				interpolatedRot);
+
+		CE::Renderer::Get().AddStaticMesh(renderQueue,
+			mMesh,
+			mMat,
+			worldMat,
+			glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f },
+			glm::vec4{ 0.0f });
+
 		CE::AddDebugLine(
 			renderQueue,
 			CE::DebugDraw::Gameplay,
@@ -123,7 +174,6 @@ void RTS::RenderingSystem::Render(const CE::World& viewportWorld, CE::RenderComm
 			CE::To3D(proj.mTargetPosition),
 			glm::vec4{ 0.0f, 1.0f, 0.0f, 1.0f });
 	}
-
 }
 
 void RTS::RenderingSystem::StepToCorrectGameState(CE::World& viewportWorld, float dt)
@@ -154,7 +204,7 @@ void RTS::RenderingSystem::StepToCorrectGameState(CE::World& viewportWorld, floa
 			}
 		};
 
-	int currRequiredNumSteps = glm::clamp(static_cast<int>(renderingComponent.mTimeStamp / Constants::sSimulationStepSize),
+	int currRequiredNumSteps = glm::clamp((static_cast<int>(renderingComponent.mTimeStamp / Constants::sSimulationStepSize) + 2),
 		1,
 		static_cast<int>(mRenderingQueue.size()));
 

@@ -49,7 +49,11 @@ void RTS::ShootAtCommand::Execute(GameState& state, std::span<const ShootAtComma
 			continue;
 		}
 
-		reg.Destroy(entity, false);
+		if (proj.mNumStepsUntilImpact <= -1)
+		{
+			reg.Destroy(entity, false);
+			continue;
+		}
 
 		if (!transformStorage.contains(proj.mTargetEntity))
 		{
