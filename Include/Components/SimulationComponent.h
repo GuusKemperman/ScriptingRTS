@@ -32,6 +32,7 @@ namespace RTS
 		const GameState& GetGameState() const { return mCurrentState; }
 
 		uint32 mStartingTotalNumOfUnits = 2;
+		uint32 mNumStepsCompleted{};
 
 		bool mShouldTeam1Start{};
 

@@ -113,6 +113,7 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 		}
 
 		mCurrentState.Step(mSimulateStep);
+		mNumStepsCompleted++;
 
 		if (mOnStepCompletedCallback)
 		{
@@ -142,6 +143,7 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 
 			mEvaluateStep.GenerateCommandsFromEvaluations(mCurrentState, mSimulateStep);
 			mCurrentState.Step(mSimulateStep);
+			mNumStepsCompleted++;
 
 			if (mOnStepCompletedCallback)
 			{
@@ -165,6 +167,8 @@ CE::MetaType RTS::SimulationComponent::Reflect()
 
 	metaType.AddField(&SimulationComponent::mStartingTotalNumOfUnits, "mStartingTotalNumOfUnits");
 	metaType.AddField(&SimulationComponent::mShouldTeam1Start, "mShouldTeam1Start");
+	metaType.AddField(&SimulationComponent::mNumStepsCompleted, "mNumStepsCompleted")
+		.GetProperties().Add(CE::Props::sIsEditorReadOnlyTag);
 
 	CE::BindEvent(metaType, CE::sOnBeginPlay, &SimulationComponent::OnBeginPlay);
 
