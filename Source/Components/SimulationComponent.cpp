@@ -92,20 +92,25 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 
 	{ // TODO replace hardcoding of spawning of units
 
-		auto spawnUnitsForTeam = [&](float offsetMul, TeamId team)
+		for (uint32 x = 10, numSpawned = 0; numSpawned < mStartingTotalNumOfUnits / 2; x++)
+		{
+			for (uint32 y = 0; y < 16 && numSpawned < mStartingTotalNumOfUnits / 2; y++, numSpawned++)
 			{
-				for (uint32 x = 10, numSpawned = 0; numSpawned < mStartingTotalNumOfUnits / 2; x++)
-				{
-					for (uint32 y = 0; y < 16 && numSpawned < mStartingTotalNumOfUnits / 2; y++, numSpawned++)
-					{
-						glm::vec2 pos = offsetMul * glm::vec2{ 1.4f } *static_cast<glm::vec2>(glm::ivec2{ x, y });
-						mSimulateStep.AddCommand(SpawnUnitCommand{ pos, team, UnitType::Tank });
-					}
-				}
-			};
+				const glm::vec2 pos1 = glm::vec2{ 1.4f } * static_cast<glm::vec2>(glm::ivec2{ x, y });
+				const glm::vec2 pos2 = -pos1;
 
-		spawnUnitsForTeam(1.0f, TeamId::Team1);
-		spawnUnitsForTeam(-1.0f, TeamId::Team2);
+				if (mShouldTeam1Start)
+				{
+					mSimulateStep.AddCommand(SpawnUnitCommand{ pos1, TeamId::Team1 , UnitType::Tank });
+					mSimulateStep.AddCommand(SpawnUnitCommand{ pos2, TeamId::Team2 , UnitType::Tank });
+				}
+				else
+				{
+					mSimulateStep.AddCommand(SpawnUnitCommand{ pos2, TeamId::Team2 , UnitType::Tank });
+					mSimulateStep.AddCommand(SpawnUnitCommand{ pos1, TeamId::Team1 , UnitType::Tank });
+				}
+			}
+		}
 
 		mCurrentState.Step(mSimulateStep);
 
@@ -159,6 +164,7 @@ CE::MetaType RTS::SimulationComponent::Reflect()
 	CE::MetaType metaType{ CE::MetaType::T<SimulationComponent>{}, "SimulationComponent" };
 
 	metaType.AddField(&SimulationComponent::mStartingTotalNumOfUnits, "mStartingTotalNumOfUnits");
+	metaType.AddField(&SimulationComponent::mShouldTeam1Start, "mShouldTeam1Start");
 
 	CE::BindEvent(metaType, CE::sOnBeginPlay, &SimulationComponent::OnBeginPlay);
 

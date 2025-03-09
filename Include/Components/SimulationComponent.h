@@ -33,6 +33,8 @@ namespace RTS
 
 		uint32 mStartingTotalNumOfUnits = 2;
 
+		bool mShouldTeam1Start{};
+
 	private:
 
 		void InvokeEvaluateEvents();
