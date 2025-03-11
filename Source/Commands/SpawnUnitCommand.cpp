@@ -36,8 +36,8 @@ void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitC
 	}
 
 	CE::CollisionRules rules{};
-	rules.mLayer = CE::CollisionLayer::Character;
-	rules.SetResponse(CE::CollisionLayer::Character, CE::CollisionResponse::Blocking);
+	rules.SetResponse(CE::CollisionLayer::GameLayer0, CE::CollisionResponse::Blocking);
+	rules.SetResponse(CE::CollisionLayer::GameLayer1, CE::CollisionResponse::Blocking);
 
 	for (const SpawnUnitCommand& command : commands)
 	{
@@ -46,7 +46,6 @@ void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitC
 		entt::entity entity = reg.Create();
 		reg.AddComponent(*playerScript, entity);
 
-		physicsStorage.emplace(entity).mRules = rules;
 		transformStorage.emplace(entity, command.mPosition, type.mRadius);
 
 		unitStorage.emplace(entity, command.mUnitType);
@@ -55,10 +54,12 @@ void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitC
 
 		switch (command.mTeamId)
 		{
-		case TeamId::Team1:	team1Storage.emplace(entity); break;
-		case TeamId::Team2:	team2Storage.emplace(entity); break;
+		case TeamId::Team1:	team1Storage.emplace(entity); rules.mLayer = CE::CollisionLayer::GameLayer0; break;
+		case TeamId::Team2:	team2Storage.emplace(entity); rules.mLayer = CE::CollisionLayer::GameLayer1; break;
 		default: ABORT;
 		}
+
+		physicsStorage.emplace(entity).mRules = rules;
 
 		switch (command.mUnitType)
 		{
