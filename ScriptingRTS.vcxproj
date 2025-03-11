@@ -261,6 +261,7 @@
     <ClInclude Include="Include\Core\GameSimulationStep.h" />
     <ClInclude Include="Include\Core\GameState.h" />
     <ClInclude Include="Include\Core\GameStepBase.h" />
+    <ClInclude Include="Include\Core\RTSCollisionLayers.h" />
     <ClInclude Include="Include\Core\ScriptingAPI.h" />
     <ClInclude Include="Include\Core\UnitFilter.h" />
     <ClInclude Include="Include\Core\UnitTypes.h" />

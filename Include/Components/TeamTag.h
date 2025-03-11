@@ -1,4 +1,5 @@
 #pragma once
+#include "Core/RTSCollisionLayers.h"
 #include "Meta/Fwd/MetaTypeIdFwd.h"
 
 namespace RTS
@@ -22,4 +23,12 @@ namespace RTS
 		return CE::MakeTypeId<Team2Tag>();
 	}
 
+	constexpr CollisionLayer GetTeamLayer(TeamId id)
+	{
+		if (id == TeamId::Team1)
+		{
+			return CollisionLayer::Team1Layer;
+		}
+		return CollisionLayer::Team2Layer;
+	}
 }

@@ -7,6 +7,7 @@
 #include "Components/Physics2D/DiskColliderComponent.h"
 #include "Components/Physics2D/PhysicsBody2DComponent.h"
 #include "Core/GameState.h"
+#include "Core/RTSCollisionLayers.h"
 #include "World/Registry.h"
 
 void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitCommand> commands)
@@ -36,8 +37,9 @@ void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitC
 	}
 
 	CE::CollisionRules rules{};
-	rules.SetResponse(CE::CollisionLayer::GameLayer0, CE::CollisionResponse::Blocking);
-	rules.SetResponse(CE::CollisionLayer::GameLayer1, CE::CollisionResponse::Blocking);
+	rules.SetResponse(CE::CollisionLayer::Query, CE::CollisionResponse::Overlap);
+	rules.SetResponse(ToCE(CollisionLayer::Team1Layer), CE::CollisionResponse::Blocking);
+	rules.SetResponse(ToCE(CollisionLayer::Team2Layer), CE::CollisionResponse::Blocking);
 
 	for (const SpawnUnitCommand& command : commands)
 	{

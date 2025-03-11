@@ -119,11 +119,16 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 		{
 			mOnStepCompletedCallback(mSimulateStep);
 		}
+
+
 	}
 
 	for (int evaluateStepNum = 0; evaluateStepNum < Constants::sTotalNumEvaluateSteps; evaluateStepNum++)
 	{
 		CE::World& world = mCurrentState.GetWorld();
+
+		CE::Physics& physics = mCurrentState.GetWorld().GetPhysics();
+		physics.UpdateBVHs({ .mForceRebuild = evaluateStepNum == 0 });
 
 		mEvaluateStep.ForEachCommandBuffer(clearBuffers);
 		InvokeEvaluateEvents();
@@ -137,8 +142,10 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 
 			mSimulateStep.ForEachCommandBuffer(clearBuffers);
 
-			CE::Physics& physics = mCurrentState.GetWorld().GetPhysics();
-			physics.UpdateBVHs({ .mForceRebuild = evaluateStepNum == 0 });
+			if (simulateStepNum != 0)
+			{
+				physics.UpdateBVHs();
+			}
 			physics.ResolveCollisions();
 
 			mEvaluateStep.GenerateCommandsFromEvaluations(mCurrentState, mSimulateStep);

@@ -9,7 +9,7 @@ namespace CE
 namespace RTS
 {
 	enum class TeamFilter : uint8 { Any, Friendly, Enemy };
-	enum class DistanceFilter : uint8 { Nearest, Furthest };
+	enum class DistanceFilter : uint8 { Nearest, Farthest };
 
 	struct UnitFilter
 	{

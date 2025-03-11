@@ -6,12 +6,14 @@
 
 #include "Components/TeamTag.h"
 #include "Components/Physics2D/DiskColliderComponent.h"
+#include "Core/RTSCollisionLayers.h"
 #include "Meta/MetaProps.h"
 #include "Meta/MetaReflect.h"
 #include "Meta/MetaType.h"
 #include "Meta/ReflectedTypes/ReflectEnums.h"
 #include "World/Registry.h"
 #include "World/World.h"
+#include "World/Physics.h"
 
 #ifdef EDITOR
 void RTS::UnitFilter::DisplayWidget(const std::string& )
@@ -45,7 +47,15 @@ entt::entity RTS::UnitFilter::operator()(const CE::World& world) const
 
 	view.iterate(*diskStorage);
 
-	if (mTeam != TeamFilter::Any)
+	CE::CollisionRules collisionFilter{};
+	collisionFilter.mLayer = CE::CollisionLayer::Query;
+
+	if (mTeam == TeamFilter::Any)
+	{
+		collisionFilter.SetResponse(ToCE(CollisionLayer::Team1Layer), CE::CollisionResponse::Overlap);
+		collisionFilter.SetResponse(ToCE(CollisionLayer::Team2Layer), CE::CollisionResponse::Overlap);
+	}
+	else
 	{
 		const TeamId* myTeamId = reg.TryGet<TeamId>(mRequestedByUnit);
 
@@ -75,31 +85,35 @@ entt::entity RTS::UnitFilter::operator()(const CE::World& world) const
 		}
 
 		view.iterate(*storage);
+		collisionFilter.SetResponse(ToCE(GetTeamLayer(targetTeamId)), CE::CollisionResponse::Overlap);
 	}
 
-	float bestDist2 = mSortByDistance == DistanceFilter::Nearest ?
-		std::numeric_limits<float>::infinity() :
-		-std::numeric_limits<float>::infinity();
 	entt::entity bestEntity = entt::null;
 
-	for (entt::entity entity : view)
-	{
-		if (entity == mRequestedByUnit)
+	const CE::Physics::ExploreOrder order =
+		[&]
 		{
-			continue;
-		}
+			switch (mSortByDistance)
+			{
+			case DistanceFilter::Nearest: return CE::Physics::ExploreOrder::NearestFirst;
+			case DistanceFilter::Farthest: return CE::Physics::ExploreOrder::FarthestFirst;
+			}
+			ABORT;
+			return CE::Physics::ExploreOrder::NearestFirst;
+		}();
 
-		CE::TransformedDiskColliderComponent disk = diskStorage->get(entity);
-
-		float dist2 = glm::distance2(disk.mCentre, requestPos);
-
-		if ((mSortByDistance == DistanceFilter::Nearest && dist2 < bestDist2)
-			|| (mSortByDistance == DistanceFilter::Furthest && dist2 > bestDist2))
+	world.GetPhysics().Explore(order,
+		requestPos,
+		collisionFilter,
+		[&](entt::entity entity, [[maybe_unused]] float dist)
 		{
-			bestDist2 = dist2;
 			bestEntity = entity;
-		}
-	}
+		},
+		CE::Physics::ExploreDefaultShouldReturnFunction<true>{},
+		[&](entt::entity entity)
+		{
+			return entity != mRequestedByUnit && view.contains(entity);
+		});
 
 	return bestEntity;
 }
