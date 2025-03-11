@@ -42,37 +42,27 @@ UNIT_TEST(Determinism, EqualSteps)
 		RTS::GameSimulationStep& step1 = simulations[0].mSteps[i];
 		RTS::GameSimulationStep& step2 = simulations[1].mSteps[i];
 
-		try
+		step1.ForEachCommandBuffer(
+			[&]<typename T>(RTS::CommandBuffer<T>& buffer1)
 		{
-			step1.ForEachCommandBuffer(
-				[&]<typename T>(RTS::CommandBuffer<T>&buffer1)
+			RTS::CommandBuffer<T>& buffer2 = step2.GetBuffer<T>();
+
+			std::list<T> cpy1{ buffer1.GetStoredCommands().data(), buffer1.GetStoredCommands().data() + buffer1.GetNumSubmittedCommands() };
+			std::list<T> cpy2{ buffer2.GetStoredCommands().data(), buffer2.GetStoredCommands().data() + buffer2.GetNumSubmittedCommands() };
+
+			for (auto it1 = cpy1.begin(); it1 != cpy1.end();)
 			{
-				RTS::CommandBuffer<T>& buffer2 = step2.GetBuffer<T>();
+				auto it2 = std::find(cpy2.begin(), cpy2.end(), *it1);
 
-				std::list<T> cpy1{ buffer1.GetStoredCommands().data(), buffer1.GetStoredCommands().data() + buffer1.GetNumSubmittedCommands() };
-				std::list<T> cpy2{ buffer2.GetStoredCommands().data(), buffer2.GetStoredCommands().data() + buffer2.GetNumSubmittedCommands() };
+				TEST_NOT_EQUAL(it2, cpy2.end());
 
-				for (auto it1 = cpy1.begin(); it1 != cpy1.end();)
-				{
-					auto it2 = std::find(cpy2.begin(), cpy2.end(), *it1);
+				cpy2.erase(it2);
+				it1 = cpy1.erase(it1);
+			}
 
-					ASSERT(it2 != cpy2.end());
-
-					cpy2.erase(it2);
-					it1 = cpy1.erase(it1);
-				}
-
-				ASSERT(cpy2.empty());
-
-			});
-		}
-		catch (std::false_type)
-		{
-			return CE::UnitTest::Failure;
-		}
+			TEST_ASSERT(cpy2.empty());
+		});
 	}
-
-	return CE::UnitTest::Success;
 }
 
 UNIT_TEST(Determinism, ApplySteps)
@@ -89,10 +79,7 @@ UNIT_TEST(Determinism, ApplySteps)
 			BinaryGSONObject realWorld = Archiver::Serialize(sim.GetGameState().GetWorld());
 			BinaryGSONObject replicatedWorld = Archiver::Serialize(gameState.GetWorld());
 
-			ASSERT(realWorld == replicatedWorld);
+			TEST_EQUAL(realWorld, replicatedWorld);
 		});
 	sim.WaitForComplete();
-
-
-	return UnitTest::Success;
 }
