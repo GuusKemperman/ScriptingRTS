@@ -92,11 +92,12 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 
 	{ // TODO replace hardcoding of spawning of units
 
-		for (uint32 x = 10, numSpawned = 0; numSpawned < mStartingTotalNumOfUnits / 2; x++)
+		for (uint32 x = 0, numSpawned = 0; numSpawned < mStartingTotalNumOfUnits / 2; x++)
 		{
-			for (uint32 y = 0; y < 16 && numSpawned < mStartingTotalNumOfUnits / 2; y++, numSpawned++)
+			for (uint32 y = 0; y < std::max(static_cast<uint32>(sqrtf(static_cast<float>(mStartingTotalNumOfUnits / 2))), 1u) 
+					&& numSpawned < mStartingTotalNumOfUnits / 2; y++, numSpawned++)
 			{
-				const glm::vec2 pos1 = glm::vec2{ 1.4f } * static_cast<glm::vec2>(glm::ivec2{ x, y });
+				const glm::vec2 pos1 = glm::vec2{ 3.0f } * static_cast<glm::vec2>(glm::ivec2{ 10 } + glm::ivec2{ x, y });
 				const glm::vec2 pos2 = -pos1;
 
 				if (mShouldTeam1Start)
