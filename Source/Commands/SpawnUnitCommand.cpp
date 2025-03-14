@@ -28,14 +28,6 @@ void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitC
 
 	auto& tankStorage = reg.Storage<TankTag>();
 
-	const CE::MetaType* playerScript = CE::MetaManager::Get().TryGetType("S_Unit");
-
-	if (playerScript == nullptr)
-	{
-		LOG(LogGame, Error, "No player script!");
-		return;
-	}
-
 	CE::CollisionRules rules{};
 	rules.SetResponse(CE::CollisionLayer::Query, CE::CollisionResponse::Overlap);
 	rules.SetResponse(ToCE(CollisionLayer::Team1Layer), CE::CollisionResponse::Blocking);
@@ -46,7 +38,13 @@ void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitC
 		const UnitType type = GetUnitType(command.mUnitType);
 
 		entt::entity entity = reg.Create();
-		reg.AddComponent(*playerScript, entity);
+
+		CE::ComponentFilter script = state.GetTeamScript(command.mTeamId);
+
+		if (script != nullptr)
+		{
+			reg.AddComponent(*script, entity);
+		}
 
 		transformStorage.emplace(entity, command.mPosition, type.mRadius);
 

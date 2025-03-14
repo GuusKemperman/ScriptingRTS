@@ -5,6 +5,7 @@
 #include "Core/GameEvaluateStep.h"
 #include "Core/GameSimulationStep.h"
 #include "Meta/Fwd/MetaReflectFwd.h"
+#include "Utilities/ComponentFilter.h"
 
 namespace CE
 {
@@ -28,8 +29,8 @@ namespace RTS
 		GameEvaluateStep& GetNextEvaluateStep() { return mEvaluateStep; }
 		const GameEvaluateStep& GetNextEvaluateStep() const { return mEvaluateStep; }
 
-		GameState& GetGameState() { return mCurrentState; }
-		const GameState& GetGameState() const { return mCurrentState; }
+		GameState& GetGameState() { return *mCurrentState; }
+		const GameState& GetGameState() const { return *mCurrentState; }
 
 		uint32 mStartingTotalNumOfUnits = 256;
 		uint32 mNumStepsCompleted{};
@@ -38,6 +39,9 @@ namespace RTS
 		bool mUsePhysics = true;
 		bool mUseMultiThreading = true;
 		bool mRunOnCallingThread = false;
+
+		CE::ComponentFilter mTeam1Script{};
+		CE::ComponentFilter mTeam2Script{};
 
 	private:
 
@@ -48,12 +52,12 @@ namespace RTS
 		static CE::MetaType Reflect();
 		REFLECT_AT_START_UP(SimulationComponent);
 
-		GameState mCurrentState{};
+		std::jthread mThread{};
+
+		std::unique_ptr<GameState> mCurrentState{};
 		GameSimulationStep mSimulateStep{};
 		GameEvaluateStep mEvaluateStep{};
 
 		std::function<void(const GameSimulationStep&)> mOnStepCompletedCallback{};
-
-		std::jthread mThread{};
 	};
 }

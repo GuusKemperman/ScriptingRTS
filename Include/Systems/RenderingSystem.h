@@ -30,7 +30,7 @@ namespace RTS
 		mutable std::mutex mRenderingQueueMutex{};
 		std::vector<GameSimulationStep> mRenderingQueue{};
 
-		std::unique_ptr<GameState> mPreviousState = std::make_unique<GameState>();
-		std::unique_ptr<GameState> mCurrentState = std::make_unique<GameState>();
+		std::unique_ptr<GameState> mPreviousState{};
+		std::unique_ptr<GameState> mCurrentState{};
 	};
 }

@@ -41,6 +41,12 @@ void RTS::RenderingSystem::Update(CE::World& world, float dt)
 
 void RTS::RenderingSystem::Render(const CE::World& viewportWorld, CE::RenderCommandQueue& renderQueue) const
 {
+	if (mCurrentState == nullptr
+		|| mPreviousState == nullptr)
+	{
+		return;
+	}
+
 	CE::Renderer::Get().SetClearColor(renderQueue, { 0.5f, 0.3f, 0.15f, 1.0f });
 
 	const RenderingComponent& renderingComponent = viewportWorld.GetRegistry().GetAny<RenderingComponent>();
@@ -180,25 +186,24 @@ void RTS::RenderingSystem::Render(const CE::World& viewportWorld, CE::RenderComm
 void RTS::RenderingSystem::StepToCorrectGameState(CE::World& viewportWorld, float dt)
 {
 	RenderingComponent& renderingComponent = viewportWorld.GetRegistry().GetAny<RenderingComponent>();
+	SimulationComponent& simulationComponent = viewportWorld.GetRegistry().GetAny<SimulationComponent>();
 
 	renderingComponent.mTimeStamp = glm::max(0.0f, renderingComponent.mTimeStamp + renderingComponent.mPlaySpeed * dt);
 
 	auto updateSteps = [&](std::unique_ptr<GameState>& state, int requiredNumSteps)
 		{
-			int currentNumSteps = static_cast<int>(state->GetNumStepsCompleted());
-
-			if (currentNumSteps > requiredNumSteps)
+			if (state == nullptr
+				|| static_cast<int>(state->GetNumStepsCompleted()) > requiredNumSteps)
 			{
-				state = std::make_unique<GameState>();
-				state = std::make_unique<GameState>();
-				currentNumSteps = 0;
+				state = std::make_unique<GameState>(simulationComponent.mTeam1Script, simulationComponent.mTeam2Script);
+				state = std::make_unique<GameState>(simulationComponent.mTeam1Script, simulationComponent.mTeam2Script);
 			}
 
-			if (currentNumSteps != requiredNumSteps)
+			if (static_cast<int>(state->GetNumStepsCompleted()) != requiredNumSteps)
 			{
 				std::lock_guard guard{ mRenderingQueueMutex };
 
-				for (int i = currentNumSteps; i < requiredNumSteps; i++)
+				for (int i = static_cast<int>(state->GetNumStepsCompleted()); i < requiredNumSteps; i++)
 				{
 					state->Step(mRenderingQueue[i]);
 				}

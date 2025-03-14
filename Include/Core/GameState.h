@@ -1,4 +1,6 @@
 #pragma once
+#include "Components/TeamTag.h"
+#include "Utilities/ComponentFilter.h"
 #include "World/World.h"
 
 namespace RTS
@@ -8,7 +10,7 @@ namespace RTS
 	class GameState
 	{
 	public:
-		GameState();
+		GameState(CE::ComponentFilter team1Script, CE::ComponentFilter team2Script);
 
 		void Step(const GameSimulationStep& step);
 
@@ -17,9 +19,14 @@ namespace RTS
 
 		uint32 GetNumStepsCompleted() const { return mNumStepsCompleted; }
 
+		const CE::ComponentFilter& GetTeamScript(TeamId team);
+
 	private:
 		CE::World mWorld{ false };
 		uint32 mNumStepsCompleted{};
+
+		CE::ComponentFilter mTeam1Script{};
+		CE::ComponentFilter mTeam2Script{};
 	};
 }
 

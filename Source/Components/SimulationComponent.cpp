@@ -28,6 +28,7 @@ void RTS::SimulationComponent::OnBeginPlay(CE::World& viewportWorld, entt::entit
 void RTS::SimulationComponent::StartSimulation(std::function<void(const GameSimulationStep&)> onStepCompleted)
 {
 	mOnStepCompletedCallback = std::move(onStepCompleted);
+	mCurrentState = std::make_unique<GameState>(mTeam1Script, mTeam2Script);
 
 	if (mRunOnCallingThread)
 	{
@@ -46,7 +47,7 @@ void RTS::SimulationComponent::WaitForComplete()
 
 void RTS::SimulationComponent::InvokeEvaluateEvents()
 {
-	CE::World& world = mCurrentState.GetWorld();
+	CE::World& world = GetGameState().GetWorld();
 	for (const CE::BoundEvent& boundEvent : world.GetEventManager().GetBoundEvents(sOnUnitEvaluate))
 	{
 		entt::sparse_set* const storage = world.GetRegistry().Storage(boundEvent.mType.get().GetTypeId());
@@ -72,7 +73,7 @@ void RTS::SimulationComponent::InvokeEvaluateEvents()
 				};
 
 				Internal::OnUnitEvaluateTarget target{
-					.sCurrentState = &mCurrentState,
+					.sCurrentState = &GetGameState(),
 					.sNextStep = &mEvaluateStep,
 					.sCurrentUnit = entity
 				};
@@ -130,7 +131,7 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 			}
 		}
 
-		mCurrentState.Step(mSimulateStep);
+		GetGameState().Step(mSimulateStep);
 		mNumStepsCompleted++;
 
 		if (mOnStepCompletedCallback)
@@ -146,9 +147,9 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 
 	for (int evaluateStepNum = 0; evaluateStepNum < Constants::sTotalNumEvaluateSteps; evaluateStepNum++)
 	{
-		CE::World& world = mCurrentState.GetWorld();
+		CE::World& world = GetGameState().GetWorld();
 
-		CE::Physics& physics = mCurrentState.GetWorld().GetPhysics();
+		CE::Physics& physics = GetGameState().GetWorld().GetPhysics();
 		physics.UpdateBVHs({ .mForceRebuild = evaluateStepNum == 0 });
 
 		mEvaluateStep.ForEachCommandBuffer(clearBuffers);
@@ -188,14 +189,14 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 				goto exit;
 			}
 
-			mEvaluateStep.GenerateCommandsFromEvaluations(mCurrentState, mSimulateStep);
+			mEvaluateStep.GenerateCommandsFromEvaluations(GetGameState(), mSimulateStep);
 
 			if (stop.stop_requested())
 			{
 				goto exit;
 			}
 
-			mCurrentState.Step(mSimulateStep);
+			GetGameState().Step(mSimulateStep);
 
 			if (stop.stop_requested())
 			{
@@ -236,6 +237,8 @@ CE::MetaType RTS::SimulationComponent::Reflect()
 	CE::MetaType metaType{ CE::MetaType::T<SimulationComponent>{}, "SimulationComponent" };
 
 	metaType.AddField(&SimulationComponent::mStartingTotalNumOfUnits, "mStartingTotalNumOfUnits");
+	metaType.AddField(&SimulationComponent::mTeam1Script, "mTeam1Script");
+	metaType.AddField(&SimulationComponent::mTeam2Script, "mTeam2Script");
 	metaType.AddField(&SimulationComponent::mShouldTeam1Start, "mShouldTeam1Start");
 	metaType.AddField(&SimulationComponent::mUsePhysics, "mUsePhysics");
 	metaType.AddField(&SimulationComponent::mUseMultiThreading, "mUseMultiThreading");

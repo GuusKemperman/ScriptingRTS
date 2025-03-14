@@ -144,7 +144,7 @@ entt::entity RTS::UnitFilter::operator()(const CE::World& world, entt::entity re
 
 	struct HealthCheck
 	{
-		HealthCheck(HealthFilter mHealth) :
+		HealthCheck(HealthFilter mHealth, const CE::Registry& reg) :
 			mHealthFilter(mHealth)
 		{
 			if (mHealth == HealthFilter::Any)
@@ -193,7 +193,7 @@ entt::entity RTS::UnitFilter::operator()(const CE::World& world, entt::entity re
 		HealthFilter mHealthFilter{};
 		const entt::storage_for_t<HealthComponent>* mHealthStorage{};
 		const entt::storage_for_t<UnitType::Enum>* mUnitTypeStorage{};
-	} healthCheck{ mHealth };
+	} healthCheck{ mHealth, reg };
 
 	auto isValidEntity = [&](entt::entity entity)
 		{

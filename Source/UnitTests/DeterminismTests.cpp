@@ -69,7 +69,7 @@ UNIT_TEST(Determinism, ApplySteps)
 {
 	RTS::SimulationComponent sim{};
 	sim.mStartingTotalNumOfUnits = 1000;
-	RTS::GameState gameState{};
+	RTS::GameState gameState{ sim.mTeam1Script, sim.mTeam2Script };
 
 	sim.StartSimulation(
 		[&](const RTS::GameSimulationStep& step)

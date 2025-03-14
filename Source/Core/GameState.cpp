@@ -8,8 +8,29 @@
 #include "Core/GameSimulationStep.h"
 #include "World/Registry.h"
 
-RTS::GameState::GameState()
+RTS::GameState::GameState(CE::ComponentFilter team1Script, CE::ComponentFilter team2Script) :
+	mTeam1Script(team1Script),
+	mTeam2Script(team2Script)
 {
+	auto setScript = [](auto& script)
+		{
+			if (script == nullptr)
+			{
+				const CE::MetaType* playerScript = CE::MetaManager::Get().TryGetType("S_Unit");
+
+				if (playerScript != nullptr)
+				{
+					script = playerScript;
+				}
+				else
+				{
+					LOG(LogGame, Error, "No player script!");
+				}
+			}
+		};
+	setScript(mTeam1Script);
+	setScript(mTeam2Script);
+
 	CE::AssetHandle level = CE::AssetManager::Get().TryGetAsset<CE::Level>("L_SimulationStart");
 
 	if (level == nullptr)
@@ -48,4 +69,13 @@ void RTS::GameState::Step(const GameSimulationStep& step)
 
 	reg.RemovedDestroyed();
 	mNumStepsCompleted++;
+}
+
+const CE::ComponentFilter& RTS::GameState::GetTeamScript(TeamId team)
+{
+	if (team == TeamId::Team1)
+	{
+		return mTeam1Script;
+	}
+	return mTeam2Script;
 }

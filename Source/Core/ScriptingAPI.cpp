@@ -63,9 +63,5 @@ CE::MetaType RTS::RTSAPI::Reflect()
 		"ShootAt",
 		"Target").GetProperties().Add(CE::Props::sIsScriptableTag).Set(CE::Props::sIsScriptPure, false);
 
-	metaType.AddFunc(&RTSAPI::Condition,
-		"Condition",
-		"Target").GetProperties().Add(CE::Props::sIsScriptableTag).Set(CE::Props::sIsScriptPure, true);
-
 	return metaType;
 }
