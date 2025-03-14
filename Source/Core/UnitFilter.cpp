@@ -72,7 +72,7 @@ entt::entity RTS::UnitFilter::operator()(const CE::World& world, entt::entity re
 
 		TeamId targetTeamId = *myTeamId;
 
-		if (mTeam != TeamFilter::Friendly)
+		if (mTeam == TeamFilter::Enemy)
 		{
 			targetTeamId = SwitchTeams(targetTeamId);
 		}
@@ -124,41 +124,54 @@ entt::entity RTS::UnitFilter::operator()(const CE::World& world, entt::entity re
 
 			switch (mRange)
 			{
-			case RangeFilter::InShortRange:		return { 0.0f, range.mShortRangeEnd }; 
-			case RangeFilter::WithinShortRange:	return { 0.0f, range.mShortRangeEnd };
+			case RangeFilter::InShortRange:		return { -std::numeric_limits<float>::infinity(), range.mShortRangeEnd };
+			case RangeFilter::WithinShortRange:	return { -std::numeric_limits<float>::infinity(), range.mShortRangeEnd };
 			case RangeFilter::OutShortRange:	return { range.mShortRangeEnd, std::numeric_limits<float>::infinity() };
 			case RangeFilter::InMidRange:		return { range.mShortRangeEnd, range.mMidRangeEnd };
-			case RangeFilter::WithinMidRange:	return { 0.0f, range.mMidRangeEnd };
+			case RangeFilter::WithinMidRange:	return { -std::numeric_limits<float>::infinity(), range.mMidRangeEnd };
 			case RangeFilter::OutMidRange:		return { range.mMidRangeEnd, std::numeric_limits<float>::infinity() };
 			case RangeFilter::InLongRange:		return { range.mMidRangeEnd, range.mLongRangeEnd }; 
-			case RangeFilter::WithinLongRange:	return { 0.0f, range.mLongRangeEnd }; 
+			case RangeFilter::WithinLongRange:	return { -std::numeric_limits<float>::infinity(), range.mLongRangeEnd };
 			case RangeFilter::OutLongRange:		return { range.mLongRangeEnd, std::numeric_limits<float>::infinity() };
 			}
 			ABORT;
 			return {};
 		}();
 
-	world.GetPhysics().Explore(order,
-		requestPos,
-		collisionFilter,
-		[&](entt::entity entity, float dist)
+	auto isValidEntity = [&](entt::entity entity)
+		{
+			return entity != requestedByUnit && view.contains(entity);
+		};
+
+	auto selectEntity = [&](entt::entity entity, float dist)
 		{
 			if (dist >= minRange
 				&& dist <= maxRange)
 			{
 				bestEntity = entity;
 			}
-		},
+		};
+
+	if (mTeam == TeamFilter::Myself)
+	{
+		if (isValidEntity(requestedByUnit))
+		{
+			selectEntity(requestedByUnit, 0.0f);
+		}
+		return bestEntity;
+	}
+
+	world.GetPhysics().Explore(order,
+		requestPos,
+		collisionFilter,
+		selectEntity,
 		[&](entt::entity, float dist)
 		{
 			return bestEntity != entt::null
 				|| (order == CE::Physics::ExploreOrder::NearestFirst && dist > maxRange)
 				|| (order == CE::Physics::ExploreOrder::FarthestFirst && dist < minRange);
 		},
-		[&](entt::entity entity)
-		{
-			return entity != requestedByUnit && view.contains(entity);
-		});
+		isValidEntity);
 
 	return bestEntity;
 }

@@ -8,7 +8,7 @@ namespace CE
 
 namespace RTS
 {
-	enum class TeamFilter : uint8 { Any, Friendly, Enemy };
+	enum class TeamFilter : uint8 { Any, Friendly, Enemy, Myself };
 	enum class SortPriority : uint8 { Nearest, Farthest };
 	enum class RangeFilter : uint8 {
 		Any,

@@ -39,6 +39,8 @@ namespace RTS
 
 		static bool ShootAt(UnitFilter target);
 
+		static bool Condition(UnitFilter target);
+
 	private:
 		friend CE::ReflectAccess;
 		static CE::MetaType Reflect();
