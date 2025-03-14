@@ -17,11 +17,21 @@ namespace
 	}
 
 	template<typename State, typename... Args>
-	void EnterState(Args&&... args)
+	bool EnterState(Args&&... args)
 	{
 		CheckTarget();
 
-		sTarget.sNextStep->AddCommand(State{ sTarget.sCurrentUnit, std::forward<Args>(args)... });
+		std::optional<State> state = State::EnterState(
+			*sTarget.sCurrentState,
+			sTarget.sCurrentUnit,
+			std::forward<Args>(args)...);
+
+		if (state.has_value())
+		{
+			sTarget.sNextStep->AddCommand(std::move(*state));
+			return true;
+		}
+		return false;
 	}
 }
 
@@ -30,14 +40,14 @@ void RTS::Internal::SetOnUnitEvaluateTargetForCurrentThread(OnUnitEvaluateTarget
 	sTarget = target;
 }
 
-void RTS::RTSAPI::MoveToEntity(UnitFilter target)
+bool RTS::RTSAPI::MoveToEntity(UnitFilter target)
 {
-	EnterState<MoveToEntityState>(target);
+	return EnterState<MoveToEntityState>(target);
 }
 
-void RTS::RTSAPI::ShootAt(UnitFilter target)
+bool RTS::RTSAPI::ShootAt(UnitFilter target)
 {
-	EnterState<ShootAtEntityState>(target);
+	return EnterState<ShootAtEntityState>(target);
 }
 
 CE::MetaType RTS::RTSAPI::Reflect()
@@ -47,11 +57,11 @@ CE::MetaType RTS::RTSAPI::Reflect()
 
 	metaType.AddFunc(&RTSAPI::MoveToEntity,
 		"MoveToEntity",
-		"Target").GetProperties().Add(CE::Props::sIsScriptableTag);
+		"Target").GetProperties().Add(CE::Props::sIsScriptableTag).Set(CE::Props::sIsScriptPure, false);
 
 	metaType.AddFunc(&RTSAPI::ShootAt,
 		"ShootAt",
-		"Target").GetProperties().Add(CE::Props::sIsScriptableTag);
+		"Target").GetProperties().Add(CE::Props::sIsScriptableTag).Set(CE::Props::sIsScriptPure, false);
 
 	return metaType;
 }

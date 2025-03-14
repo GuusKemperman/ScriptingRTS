@@ -35,9 +35,9 @@ namespace RTS
 
 	struct RTSAPI
 	{
-		static void MoveToEntity(UnitFilter target);
+		static bool MoveToEntity(UnitFilter target);
 
-		static void ShootAt(UnitFilter target);
+		static bool ShootAt(UnitFilter target);
 
 	private:
 		friend CE::ReflectAccess;

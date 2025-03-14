@@ -17,6 +17,10 @@ namespace RTS
 			std::span<const Derived> states, 
 			const auto& func);
 
+		static std::optional<Derived> EnterState(const GameState& gameState,
+			entt::entity unit,
+			UnitFilter target);
+
 		bool operator==(const TargetEntityWhileConditionState&) const = default;
 		bool operator!=(const TargetEntityWhileConditionState&) const = default;
 
@@ -51,5 +55,16 @@ namespace RTS
 
 			func(state.mRequestedByUnit, target);
 		}
+	}
+
+	template <typename Derived>
+	std::optional<Derived> TargetEntityWhileConditionState<Derived>::EnterState(const GameState& gameState,
+		entt::entity unit, UnitFilter target)
+	{
+		if (target(gameState.GetWorld(), unit) != entt::null)
+		{
+			return Derived{ unit, target };
+		}
+		return std::nullopt;
 	}
 }
