@@ -2,6 +2,7 @@
 #include "Core/ScriptingAPI.h"
 
 #include "Core/GameEvaluateStep.h"
+#include "States/FleeFromEntityState.h"
 #include "States/MoveToEntityState.h"
 #include "States/ShootAtEntityState.h"
 #include "World/Registry.h"
@@ -48,6 +49,17 @@ bool RTS::RTSAPI::MoveToEntity(UnitFilter target)
 bool RTS::RTSAPI::ShootAt(UnitFilter target)
 {
 	return EnterState<ShootAtEntityState>(target);
+}
+
+bool RTS::RTSAPI::Exists(UnitFilter target)
+{
+	CheckTarget();
+	return target(sTarget.sCurrentState->GetWorld(), sTarget.sCurrentUnit) != entt::null;
+}
+
+bool RTS::RTSAPI::Flee(UnitFilter from)
+{
+	return EnterState<FleeFromEntityState>(from);
 }
 
 CE::MetaType RTS::RTSAPI::Reflect()

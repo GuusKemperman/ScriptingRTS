@@ -39,6 +39,10 @@ namespace RTS
 
 		static bool ShootAt(UnitFilter target);
 
+		static bool Exists(UnitFilter target);
+
+		static bool Flee(UnitFilter from);
+
 	private:
 		friend CE::ReflectAccess;
 		static CE::MetaType Reflect();

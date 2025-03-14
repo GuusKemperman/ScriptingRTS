@@ -238,6 +238,8 @@
     </ClCompile>
     <ClCompile Include="Source\Core\ScriptingAPI.cpp" />
     <ClCompile Include="Source\Core\UnitFilter.cpp" />
+    <ClCompile Include="Source\Components\ScriptExamples\BasicCombat.cpp" />
+    <ClCompile Include="Source\States\FleeFromEntityState.cpp" />
     <ClCompile Include="Source\States\MoveToEntityState.cpp" />
     <ClCompile Include="Source\States\ShootAtEntityState.cpp" />
     <ClCompile Include="Source\Systems\RenderingSystem.cpp" />
@@ -252,6 +254,7 @@
     <ClInclude Include="Include\Components\HealthComponent.h" />
     <ClInclude Include="Include\Components\ProjectileComponent.h" />
     <ClInclude Include="Include\Components\RenderingComponent.h" />
+    <ClInclude Include="Include\Components\ScriptExamples\BasicCombatComponent.h" />
     <ClInclude Include="Include\Components\SimulationComponent.h" />
     <ClInclude Include="Include\Components\TeamTag.h" />
     <ClInclude Include="Include\Components\UnitTypeTag.h" />
@@ -267,6 +270,7 @@
     <ClInclude Include="Include\Core\UnitTypes.h" />
     <ClInclude Include="Include\Core\WeaponTypes.h" />
     <ClInclude Include="Include\ScriptingRTS\Precomp.h" />
+    <ClInclude Include="Include\Scripting\CompiledProgram.h" />
     <ClInclude Include="Include\States\MoveToEntityState.h" />
     <ClInclude Include="Include\States\ShootAtEntityState.h" />
     <ClInclude Include="Include\States\TargetEntityWhileConditionState.h" />

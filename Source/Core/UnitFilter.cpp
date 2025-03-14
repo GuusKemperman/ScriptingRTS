@@ -197,7 +197,7 @@ entt::entity RTS::UnitFilter::operator()(const CE::World& world, entt::entity re
 
 	auto isValidEntity = [&](entt::entity entity)
 		{
-			return entity != requestedByUnit
+			return (mTeam == TeamFilter::Myself || entity != requestedByUnit)
 					&& view.contains(entity)
 					&& healthCheck(entity);
 		};

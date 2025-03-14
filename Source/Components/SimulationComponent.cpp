@@ -50,7 +50,8 @@ void RTS::SimulationComponent::InvokeEvaluateEvents()
 	CE::World& world = GetGameState().GetWorld();
 	for (const CE::BoundEvent& boundEvent : world.GetEventManager().GetBoundEvents(sOnUnitEvaluate))
 	{
-		entt::sparse_set* const storage = world.GetRegistry().Storage(boundEvent.mType.get().GetTypeId());
+		const CE::TypeId typeId = boundEvent.mType.get().GetTypeId();
+		entt::sparse_set* const storage = world.GetRegistry().Storage(typeId);
 
 		if (storage == nullptr)
 		{
@@ -63,11 +64,13 @@ void RTS::SimulationComponent::InvokeEvaluateEvents()
 		entt::runtime_view view{};
 		view.iterate(*storage);
 
+		bool isStatic = func.GetParameters().at(0).mTypeTraits.mStrippedTypeId != typeId;
+
 		auto evaluateEntity = 
 			[&](entt::entity entity)
 			{
 				std::array args{
-					CE::MetaAny{ boundEvent.mType, storage->value(entity), false },
+					!isStatic ? CE::MetaAny{ boundEvent.mType, storage->value(entity), false } : CE::MetaAny{ boundEvent.mType },
 					CE::MetaAny{ world },
 					CE::MetaAny{ entity }
 				};
@@ -79,7 +82,8 @@ void RTS::SimulationComponent::InvokeEvaluateEvents()
 				};
 				Internal::SetOnUnitEvaluateTargetForCurrentThread(target);
 
-				func.InvokeUnchecked(args, argForms);
+				func.InvokeUnchecked(std::span{ args.data() + isStatic, static_cast<size_t>(3 - isStatic) }, 
+					std::span{ argForms.data() + isStatic, static_cast<size_t>(3 - isStatic) });
 			};
 
 		if (mUseMultiThreading)

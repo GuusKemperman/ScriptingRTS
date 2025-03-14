@@ -52,12 +52,12 @@ namespace RTS
 		static CE::MetaType Reflect();
 		REFLECT_AT_START_UP(SimulationComponent);
 
-		std::jthread mThread{};
 
 		std::unique_ptr<GameState> mCurrentState{};
 		GameSimulationStep mSimulateStep{};
 		GameEvaluateStep mEvaluateStep{};
 
 		std::function<void(const GameSimulationStep&)> mOnStepCompletedCallback{};
+		std::jthread mThread{};
 	};
 }
