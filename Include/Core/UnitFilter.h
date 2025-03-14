@@ -10,17 +10,31 @@ namespace RTS
 {
 	enum class TeamFilter : uint8 { Any, Friendly, Enemy, Myself };
 	enum class SortPriority : uint8 { Nearest, Farthest };
+
 	enum class RangeFilter : uint8 {
 		Any,
 		InShortRange,
-		WithinShortRange,
+		InShortRangeOrCloser,
 		OutShortRange,
 		InMidRange,
-		WithinMidRange,
+		InMidRangeOrCloser,
 		OutMidRange,
 		InLongRange,
-		WithinLongRange,
+		InLongRangeOrCloser,
 		OutLongRange,
+	};
+
+	enum class HealthFilter : uint8
+	{
+		Any,
+		Below25,
+		Above25,
+		Below50,
+		Above50,
+		Below75,
+		Above75,
+		Below100,
+		Full,
 	};
 
 	struct UnitFilter
@@ -36,6 +50,7 @@ namespace RTS
 		TeamFilter mTeam{};
 		SortPriority mSortByDistance{};
 		RangeFilter mRange{};
+		HealthFilter mHealth{};
 
 	private:
 		friend CE::ReflectAccess;
@@ -62,6 +77,12 @@ struct Reflector<RTS::RangeFilter>
 	static CE::MetaType Reflect();
 };
 
+template<>
+struct Reflector<RTS::HealthFilter>
+{
+	static CE::MetaType Reflect();
+};
+
 #ifdef EDITOR
 IMGUI_AUTO_DEFINE_INLINE(template<>, RTS::UnitFilter, var.DisplayWidget(name);)
 #endif // EDITOR
@@ -78,8 +99,13 @@ namespace cereal
 		{
 			ar(value.mRange);
 		}
+
+		if (version >= 2)
+		{
+			ar(value.mHealth);
+		}
 	}
 }
 
-CEREAL_CLASS_VERSION(RTS::UnitFilter, 1);
+CEREAL_CLASS_VERSION(RTS::UnitFilter, 2);
 
