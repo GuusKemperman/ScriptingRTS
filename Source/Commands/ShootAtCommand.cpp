@@ -21,15 +21,16 @@ void RTS::ShootAtCommand::Execute(GameState& state, std::span<const ShootAtComma
 	for (const ShootAtCommand& command : commands)
 	{
 		WeaponComponent& weapon = weaponStorage.get(command.mFiredBy);
+		const WeaponType weaponType = GetWeaponType(weapon.mType);
 
 		// + 1 cus we lower it by one in a second.
-		weapon.mNumStepsUntilCanFire = GetWeaponProperty<&WeaponType::mNumStepsBetweenFiring>(weapon.mType) + 1;
+		weapon.mNumStepsUntilCanFire = weaponType.mNumStepsBetweenFiring + 1;
 
 		const glm::vec2 startPos = transformStorage.get(command.mFiredBy).mCentre;
 		const glm::vec2 endPos = transformStorage.get(command.mTargetEntity).mCentre;
 		
 		// + 1 cus we lower it by one in a second.
-		const int numStepsUntilImpact = GetWeaponProperty<&WeaponType::mNumStepsUntilImpact>(weapon.mType) + 1;
+		const int numStepsUntilImpact = weaponType.mNumStepsUntilImpact + 1;
 
 		entt::entity projEntity = reg.Create();
 		projectileStorage.emplace(projEntity,
@@ -74,7 +75,8 @@ void RTS::ShootAtCommand::Execute(GameState& state, std::span<const ShootAtComma
 			continue;
 		}
 
-		health.mHealth -= GetWeaponProperty<&WeaponType::mDamage>(proj.mFiredFromWeapon);
+		const WeaponType weaponType = GetWeaponType(proj.mFiredFromWeapon);
+		health.mHealth -= weaponType.mDamage;
 
 		if (health.mHealth <= 0.0f)
 		{

@@ -129,7 +129,8 @@ void RTS::RenderingSystem::Render(const CE::World& viewportWorld, CE::RenderComm
 		std::uniform_real_distribution endOffsetRange{ -.5f, .5f };
 		glm::vec2 randomEndOffset = { endOffsetRange(rng), endOffsetRange(rng) };
 
-		const float totalTimeUntilImpact = GetWeaponProperty<&WeaponType::mProjectileTimeUntilImpact>(proj.mFiredFromWeapon);
+		const WeaponType weaponType = GetWeaponType(proj.mFiredFromWeapon);
+		const float totalTimeUntilImpact = weaponType.mProjectileTimeUntilImpact;
 
 		auto getTimeAsPercentage = [=](int32 stepsUntilImpact)
 			{
