@@ -9,7 +9,19 @@ namespace CE
 namespace RTS
 {
 	enum class TeamFilter : uint8 { Any, Friendly, Enemy };
-	enum class DistanceFilter : uint8 { Nearest, Farthest };
+	enum class SortPriority : uint8 { Nearest, Farthest };
+	enum class RangeFilter : uint8 {
+		Any,
+		InShortRange,
+		WithinShortRange,
+		OutShortRange,
+		InMidRange,
+		WithinMidRange,
+		OutMidRange,
+		InLongRange,
+		WithinLongRange,
+		OutLongRange,
+	};
 
 	struct UnitFilter
 	{
@@ -22,7 +34,8 @@ namespace RTS
 		entt::entity operator()(const CE::World& world, entt::entity requestedByUnit) const;
 
 		TeamFilter mTeam{};
-		DistanceFilter mSortByDistance{};
+		SortPriority mSortByDistance{};
+		RangeFilter mRange{};
 
 	private:
 		friend CE::ReflectAccess;
@@ -38,7 +51,13 @@ struct Reflector<RTS::TeamFilter>
 };
 
 template<>
-struct Reflector<RTS::DistanceFilter>
+struct Reflector<RTS::SortPriority>
+{
+	static CE::MetaType Reflect();
+};
+
+template<>
+struct Reflector<RTS::RangeFilter>
 {
 	static CE::MetaType Reflect();
 };
@@ -54,6 +73,13 @@ namespace cereal
 	{
 		ar(value.mSortByDistance);
 		ar(value.mTeam);
+
+		if (version >= 1)
+		{
+			ar(value.mRange);
+		}
 	}
 }
+
+CEREAL_CLASS_VERSION(RTS::UnitFilter, 1);
 

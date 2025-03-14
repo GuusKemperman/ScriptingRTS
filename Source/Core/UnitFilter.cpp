@@ -5,6 +5,7 @@
 #include <magic_enum/magic_enum_format.hpp>
 
 #include "Components/TeamTag.h"
+#include "Components/WeaponComponent.h"
 #include "Components/Physics2D/DiskColliderComponent.h"
 #include "Core/RTSCollisionLayers.h"
 #include "Meta/MetaProps.h"
@@ -20,6 +21,7 @@ void RTS::UnitFilter::DisplayWidget(const std::string& )
 {
 	CE::ShowInspectUI("Team", mTeam);
 	CE::ShowInspectUI("SortByDistance", mSortByDistance);
+	CE::ShowInspectUI("Range", mRange);
 }
 #endif
 
@@ -95,21 +97,64 @@ entt::entity RTS::UnitFilter::operator()(const CE::World& world, entt::entity re
 		{
 			switch (mSortByDistance)
 			{
-			case DistanceFilter::Nearest: return CE::Physics::ExploreOrder::NearestFirst;
-			case DistanceFilter::Farthest: return CE::Physics::ExploreOrder::FarthestFirst;
+			case SortPriority::Nearest: return CE::Physics::ExploreOrder::NearestFirst;
+			case SortPriority::Farthest: return CE::Physics::ExploreOrder::FarthestFirst;
 			}
 			ABORT;
 			return CE::Physics::ExploreOrder::NearestFirst;
 		}();
 
+	const auto [minRange, maxRange] = [&]() -> std::pair<float, float>
+		{
+			if (mRange == RangeFilter::Any)
+			{
+				return { -std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
+			}
+
+			const WeaponComponent* weapon = reg.TryGet<WeaponComponent>(requestedByUnit);
+
+			if (weapon == nullptr)
+			{
+				return { -std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
+			}
+
+			const WeaponType& weaponType = GetWeaponType(weapon->mType);
+
+			const auto& range = weaponType.mRange.mNamedRanges;
+
+			switch (mRange)
+			{
+			case RangeFilter::InShortRange:		return { 0.0f, range.mShortRangeEnd }; 
+			case RangeFilter::WithinShortRange:	return { 0.0f, range.mShortRangeEnd };
+			case RangeFilter::OutShortRange:	return { range.mShortRangeEnd, std::numeric_limits<float>::infinity() };
+			case RangeFilter::InMidRange:		return { range.mShortRangeEnd, range.mMidRangeEnd };
+			case RangeFilter::WithinMidRange:	return { 0.0f, range.mMidRangeEnd };
+			case RangeFilter::OutMidRange:		return { range.mMidRangeEnd, std::numeric_limits<float>::infinity() };
+			case RangeFilter::InLongRange:		return { range.mMidRangeEnd, range.mLongRangeEnd }; 
+			case RangeFilter::WithinLongRange:	return { 0.0f, range.mLongRangeEnd }; 
+			case RangeFilter::OutLongRange:		return { range.mLongRangeEnd, std::numeric_limits<float>::infinity() };
+			}
+			ABORT;
+			return {};
+		}();
+
 	world.GetPhysics().Explore(order,
 		requestPos,
 		collisionFilter,
-		[&](entt::entity entity, [[maybe_unused]] float dist)
+		[&](entt::entity entity, float dist)
 		{
-			bestEntity = entity;
+			if (dist >= minRange
+				&& dist <= maxRange)
+			{
+				bestEntity = entity;
+			}
 		},
-		CE::Physics::ExploreDefaultShouldReturnFunction<true>{},
+		[&](entt::entity, float dist)
+		{
+			return bestEntity != entt::null
+				|| (order == CE::Physics::ExploreOrder::NearestFirst && dist > maxRange)
+				|| (order == CE::Physics::ExploreOrder::FarthestFirst && dist < minRange);
+		},
 		[&](entt::entity entity)
 		{
 			return entity != requestedByUnit && view.contains(entity);
@@ -128,6 +173,7 @@ CE::MetaType RTS::UnitFilter::Reflect()
 
 	type.AddField(&UnitFilter::mTeam, "Team").GetProperties().Add(CE::Props::sIsScriptableTag);
 	type.AddField(&UnitFilter::mSortByDistance, "SortByDistance").GetProperties().Add(CE::Props::sIsScriptableTag);
+	type.AddField(&UnitFilter::mRange, "Range").GetProperties().Add(CE::Props::sIsScriptableTag);
 
 	CE::ReflectFieldType<UnitFilter>(type);
 
@@ -139,7 +185,12 @@ CE::MetaType Reflector<RTS::TeamFilter>::Reflect()
 	return CE::ReflectEnumType<RTS::TeamFilter>(true);
 }
 
-CE::MetaType Reflector<RTS::DistanceFilter>::Reflect()
+CE::MetaType Reflector<RTS::SortPriority>::Reflect()
 {
-	return CE::ReflectEnumType<RTS::DistanceFilter>(true);
+	return CE::ReflectEnumType<RTS::SortPriority>(true);
+}
+
+CE::MetaType Reflector<RTS::RangeFilter>::Reflect()
+{
+	return CE::ReflectEnumType<RTS::RangeFilter>(true);
 }
