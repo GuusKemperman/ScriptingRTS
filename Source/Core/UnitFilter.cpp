@@ -23,7 +23,7 @@ void RTS::UnitFilter::DisplayWidget(const std::string& )
 }
 #endif
 
-entt::entity RTS::UnitFilter::operator()(const CE::World& world) const
+entt::entity RTS::UnitFilter::operator()(const CE::World& world, entt::entity requestedByUnit) const
 {
 	const CE::Registry& reg = world.GetRegistry();
 	entt::basic_runtime_view<const entt::sparse_set> view{};
@@ -35,15 +35,15 @@ entt::entity RTS::UnitFilter::operator()(const CE::World& world) const
 		return entt::null;
 	}
 
-	if (!diskStorage->contains(mRequestedByUnit))
+	if (!diskStorage->contains(requestedByUnit))
 	{
 		LOG(LogGame, Error,
 			"UnitFilter requested by entity {}, but entity has no position",
-			entt::to_integral(mRequestedByUnit));
+			entt::to_integral(requestedByUnit));
 		return entt::null;
 	}
 
-	glm::vec2 requestPos = diskStorage->get(mRequestedByUnit).mCentre;
+	glm::vec2 requestPos = diskStorage->get(requestedByUnit).mCentre;
 
 	view.iterate(*diskStorage);
 
@@ -57,14 +57,14 @@ entt::entity RTS::UnitFilter::operator()(const CE::World& world) const
 	}
 	else
 	{
-		const TeamId* myTeamId = reg.TryGet<TeamId>(mRequestedByUnit);
+		const TeamId* myTeamId = reg.TryGet<TeamId>(requestedByUnit);
 
 		if (myTeamId == nullptr)
 		{
 			LOG(LogGame, Warning, 
 				"TeamFilter was {}, but entity {} that performed this query did not belong to a team",
 				mTeam,
-				entt::to_integral(mRequestedByUnit));
+				entt::to_integral(requestedByUnit));
 			return entt::null;
 		}
 
@@ -112,7 +112,7 @@ entt::entity RTS::UnitFilter::operator()(const CE::World& world) const
 		CE::Physics::ExploreDefaultShouldReturnFunction<true>{},
 		[&](entt::entity entity)
 		{
-			return entity != mRequestedByUnit && view.contains(entity);
+			return entity != requestedByUnit && view.contains(entity);
 		});
 
 	return bestEntity;

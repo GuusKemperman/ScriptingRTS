@@ -5,7 +5,6 @@
 #include "Commands/ShootAtCommand.h"
 #include "Components/WeaponComponent.h"
 #include "Components/Physics2D/DiskColliderComponent.h"
-#include "Core/GameEvaluateStep.h"
 #include "Core/GameSimulationStep.h"
 #include "Core/GameState.h"
 #include "World/Registry.h"
@@ -28,46 +27,39 @@ void RTS::ShootAtEntityState::Execute(const GameState& gameState,
 
 	CommandBuffer<ShootAtCommand>& shootAtBuffer = nextStep.GetBuffer<ShootAtCommand>();
 
-	for (const ShootAtEntityState& shootState : commands)
-	{
-		if (!weaponStorage->contains(shootState.mUnit)
-			|| !diskStorage->contains(shootState.mTargetEntity))
+	ForEach(gameState, commands,
+		[&](entt::entity unit, entt::entity target)
 		{
-			continue;
-		}
-
-		const WeaponComponent& weapon = weaponStorage->get(shootState.mUnit);
-
-		if (weapon.mNumStepsUntilCanFire > 0)
-		{
-			continue;
-		}
-
-		ASSERT(diskStorage->contains(shootState.mUnit));
-
-		const CE::TransformedDisk& unitDisk = diskStorage->get(shootState.mUnit);
-		const CE::TransformedDisk& targetDisk = diskStorage->get(shootState.mTargetEntity);
-
-		const float range2 = CE::Math::sqr(GetWeaponProperty<&WeaponType::mMaxRange>(weapon.mType));
-		const float dist2 = glm::distance2(unitDisk.mCentre, targetDisk.mCentre);
-
-		if (dist2 > range2)
-		{
-			continue;
-		}
-
-		shootAtBuffer.AddCommand(ShootAtCommand
+			if (!weaponStorage->contains(unit)
+				|| !diskStorage->contains(target))
 			{
-				.mFiredBy = shootState.mUnit,
-				.mTargetEntity = shootState.mTargetEntity
-			});
-	}
-}
+				return;
+			}
 
-void RTS::ShootAtEntityState::EnterState(const GameState&,
-	GameEvaluateStep& nextStep,
-	entt::entity unit,
-	entt::entity targetEntity)
-{
-	nextStep.AddCommand(ShootAtEntityState{ unit, targetEntity });
+			const WeaponComponent& weapon = weaponStorage->get(unit);
+
+			if (weapon.mNumStepsUntilCanFire > 0)
+			{
+				return;
+			}
+
+			ASSERT(diskStorage->contains(unit));
+
+			const CE::TransformedDisk& unitDisk = diskStorage->get(unit);
+			const CE::TransformedDisk& targetDisk = diskStorage->get(target);
+
+			const float range2 = CE::Math::sqr(GetWeaponProperty<&WeaponType::mMaxRange>(weapon.mType));
+			const float dist2 = glm::distance2(unitDisk.mCentre, targetDisk.mCentre);
+
+			if (dist2 > range2)
+			{
+				return;
+			}
+
+			shootAtBuffer.AddCommand(ShootAtCommand
+				{
+					.mFiredBy = unit,
+					.mTargetEntity = target
+				});
+		});
 }

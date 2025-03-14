@@ -19,9 +19,7 @@ namespace RTS
 
 		constexpr auto operator<=>(const UnitFilter&) const = default;
 
-		entt::entity operator()(const CE::World& world) const;
-
-		entt::entity mRequestedByUnit = entt::null;
+		entt::entity operator()(const CE::World& world, entt::entity requestedByUnit) const;
 
 		TeamFilter mTeam{};
 		DistanceFilter mSortByDistance{};

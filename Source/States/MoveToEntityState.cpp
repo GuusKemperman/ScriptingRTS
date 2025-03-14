@@ -22,25 +22,19 @@ void RTS::MoveToEntityState::Execute(const GameState& gameState, GameSimulationS
 
 	CommandBuffer<MoveToCommand>& moveToBuffer = nextStep.GetBuffer<MoveToCommand>();
 
-	for (const MoveToEntityState& moveState : commands)
-	{
-		if (!diskStorage->contains(moveState.mTargetEntity))
+	ForEach(gameState, commands, 
+		[&](entt::entity unit, entt::entity target)
 		{
-			continue;
-		}
+			if (!diskStorage->contains(target))
+			{
+				return;
+			}
 
-		MoveToCommand::AddMoveTowardsPositionCommand(*diskStorage, 
-			*unitStorage,
-			moveToBuffer,
-			moveState.mUnit, 
-			diskStorage->get(moveState.mTargetEntity).mCentre);
-	}
+			MoveToCommand::AddMoveTowardsPositionCommand(*diskStorage,
+				*unitStorage,
+				moveToBuffer,
+				unit,
+				diskStorage->get(target).mCentre);
+		});
 }
 
-void RTS::MoveToEntityState::EnterState(const GameState&, 
-	GameEvaluateStep& nextStep, 
-	entt::entity unit,
-	entt::entity targetEntity)
-{
-	nextStep.AddCommand(MoveToEntityState{ unit, targetEntity });
-}

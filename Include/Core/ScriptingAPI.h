@@ -35,15 +35,9 @@ namespace RTS
 
 	struct RTSAPI
 	{
-		static void MoveToEntity(entt::entity target);
+		static void MoveToEntity(UnitFilter target);
 
-		static void MoveToPosition(glm::vec2 target);
-
-		static entt::entity FindEntity(UnitFilter filter);
-
-		static void ShootAt(entt::entity target);
-
-		static float GetDistance(entt::entity entity);
+		static void ShootAt(UnitFilter target);
 
 	private:
 		friend CE::ReflectAccess;
