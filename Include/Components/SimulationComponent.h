@@ -31,10 +31,13 @@ namespace RTS
 		GameState& GetGameState() { return mCurrentState; }
 		const GameState& GetGameState() const { return mCurrentState; }
 
-		uint32 mStartingTotalNumOfUnits = 2;
+		uint32 mStartingTotalNumOfUnits = 256;
 		uint32 mNumStepsCompleted{};
 
 		bool mShouldTeam1Start{};
+		bool mUsePhysics = true;
+		bool mUseMultiThreading = true;
+		bool mRunOnCallingThread = false;
 
 	private:
 

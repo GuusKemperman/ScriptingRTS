@@ -28,7 +28,15 @@ void RTS::SimulationComponent::OnBeginPlay(CE::World& viewportWorld, entt::entit
 void RTS::SimulationComponent::StartSimulation(std::function<void(const GameSimulationStep&)> onStepCompleted)
 {
 	mOnStepCompletedCallback = std::move(onStepCompleted);
-	mThread = std::jthread{ [this](const std::stop_token& token) { SimulateThread(token); } };
+
+	if (mRunOnCallingThread)
+	{
+		SimulateThread({});
+	}
+	else
+	{
+		mThread = std::jthread{ [this](const std::stop_token& token) { SimulateThread(token); } };
+	}
 }
 
 void RTS::SimulationComponent::WaitForComplete()
@@ -54,7 +62,7 @@ void RTS::SimulationComponent::InvokeEvaluateEvents()
 		entt::runtime_view view{};
 		view.iterate(*storage);
 
-		std::for_each(std::execution::par_unseq, view.begin(), view.end(),
+		auto evaluateEntity = 
 			[&](entt::entity entity)
 			{
 				std::array args{
@@ -71,7 +79,16 @@ void RTS::SimulationComponent::InvokeEvaluateEvents()
 				Internal::SetOnUnitEvaluateTargetForCurrentThread(target);
 
 				func.InvokeUnchecked(args, argForms);
-			});
+			};
+
+		if (mUseMultiThreading)
+		{
+			std::for_each(std::execution::par_unseq, view.begin(), view.end(), evaluateEntity);
+		}
+		else
+		{
+			std::for_each(view.begin(), view.end(), evaluateEntity);
+		}
 	}
 }
 
@@ -120,8 +137,11 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 		{
 			mOnStepCompletedCallback(mSimulateStep);
 		}
+	}
 
-
+	if (stop.stop_requested())
+	{
+		goto exit;
 	}
 
 	for (int evaluateStepNum = 0; evaluateStepNum < Constants::sTotalNumEvaluateSteps; evaluateStepNum++)
@@ -143,15 +163,51 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 
 			mSimulateStep.ForEachCommandBuffer(clearBuffers);
 
+			if (stop.stop_requested())
+			{
+				goto exit;
+			}
+
 			if (simulateStepNum != 0)
 			{
 				physics.UpdateBVHs();
 			}
-			physics.ResolveCollisions();
+
+			if (stop.stop_requested())
+			{
+				goto exit;
+			}
+
+			if (mUsePhysics)
+			{
+				physics.ResolveCollisions();
+			}
+
+			if (stop.stop_requested())
+			{
+				goto exit;
+			}
 
 			mEvaluateStep.GenerateCommandsFromEvaluations(mCurrentState, mSimulateStep);
+
+			if (stop.stop_requested())
+			{
+				goto exit;
+			}
+
 			mCurrentState.Step(mSimulateStep);
+
+			if (stop.stop_requested())
+			{
+				goto exit;
+			}
+
 			mNumStepsCompleted++;
+
+			if (stop.stop_requested())
+			{
+				goto exit;
+			}
 
 			if (mOnStepCompletedCallback)
 			{
@@ -162,6 +218,12 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 				{
 					moveToBuffer.AddCommand(entity, disk.mCentre);
 				}
+
+				if (stop.stop_requested())
+				{
+					goto exit;
+				}
+
 				mOnStepCompletedCallback(mSimulateStep);
 			}
 		}
@@ -175,6 +237,9 @@ CE::MetaType RTS::SimulationComponent::Reflect()
 
 	metaType.AddField(&SimulationComponent::mStartingTotalNumOfUnits, "mStartingTotalNumOfUnits");
 	metaType.AddField(&SimulationComponent::mShouldTeam1Start, "mShouldTeam1Start");
+	metaType.AddField(&SimulationComponent::mUsePhysics, "mUsePhysics");
+	metaType.AddField(&SimulationComponent::mUseMultiThreading, "mUseMultiThreading");
+	metaType.AddField(&SimulationComponent::mRunOnCallingThread, "mRunOnCallingThread");
 	metaType.AddField(&SimulationComponent::mNumStepsCompleted, "mNumStepsCompleted")
 		.GetProperties().Add(CE::Props::sIsEditorReadOnlyTag);
 

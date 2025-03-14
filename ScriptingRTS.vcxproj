@@ -243,6 +243,7 @@
     <ClCompile Include="Source\States\ShootAtEntityState.cpp" />
     <ClCompile Include="Source\Systems\RenderingSystem.cpp" />
     <ClCompile Include="Source\UnitTests\DeterminismTests.cpp" />
+    <ClCompile Include="Source\UnitTests\SymmetryTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Commands\CommandBuffer.h" />
