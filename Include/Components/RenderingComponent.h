@@ -3,10 +3,18 @@
 #include "BasicDataTypes/Colors/LinearColor.h"
 #include "Meta/Fwd/MetaReflectFwd.h"
 
+namespace CE
+{
+	class World;
+}
+
 namespace RTS
 {
-	struct RenderingComponent
+	class RenderingComponent
 	{
+	public:
+		void OnSimulationStart(CE::World& viewportWorld, entt::entity owner);
+
 		float mTimeStamp{};
 		float mPlaySpeed = 1.0f;
 

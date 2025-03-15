@@ -14,12 +14,23 @@ namespace CE
 
 namespace RTS
 {
+	struct OnSimulationStart :
+		CE::EventType<OnSimulationStart>
+	{
+		OnSimulationStart() :
+			EventType("OnSimulationStart")
+		{
+		}
+	};
+	inline OnSimulationStart sOnSimulationStart{};
+
 	class SimulationComponent
 	{
+		void InvokeEvaluateEvents();
 	public:
 		void OnBeginPlay(CE::World& world, entt::entity owner);
 
-		void StartSimulation(std::function<void(const GameSimulationStep&)> onStepCompleted = {});
+		void StartSimulation();
 
 		void WaitForComplete();
 
@@ -32,6 +43,8 @@ namespace RTS
 		GameState& GetGameState() { return *mCurrentState; }
 		const GameState& GetGameState() const { return *mCurrentState; }
 
+		void OnPreEvaluate(entt::entity entity);
+
 		uint32 mStartingTotalNumOfUnits = 256;
 		uint32 mNumStepsCompleted{};
 
@@ -43,21 +56,20 @@ namespace RTS
 		CE::ComponentFilter mTeam1Script{};
 		CE::ComponentFilter mTeam2Script{};
 
-	private:
+		std::function<void()> mInvokeEvaluateEvents = [this] { InvokeEvaluateEvents(); };
+		std::function<void(const GameSimulationStep&)> mOnStepCompletedCallback{};
 
-		void InvokeEvaluateEvents();
+	private:
 		void SimulateThread(const std::stop_token& stop);
 
 		friend CE::ReflectAccess;
 		static CE::MetaType Reflect();
 		REFLECT_AT_START_UP(SimulationComponent);
 
-
 		std::unique_ptr<GameState> mCurrentState{};
 		GameSimulationStep mSimulateStep{};
 		GameEvaluateStep mEvaluateStep{};
 
-		std::function<void(const GameSimulationStep&)> mOnStepCompletedCallback{};
 		std::jthread mThread{};
 	};
 }

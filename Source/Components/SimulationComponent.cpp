@@ -3,31 +3,19 @@
 
 #include <entt/entity/runtime_view.hpp>
 
-#include "Components/RenderingComponent.h"
 #include "Core/ScriptingAPI.h"
-#include "Systems/RenderingSystem.h"
 #include "Utilities/Reflect/ReflectComponentType.h"
 #include "World/EventManager.h"
 #include "World/Physics.h"
 
 void RTS::SimulationComponent::OnBeginPlay(CE::World& viewportWorld, entt::entity)
 {
-	std::function<void(const GameSimulationStep&)> callback{};
-	if (!viewportWorld.GetRegistry().Storage<RenderingComponent>().empty())
-	{
-		callback =
-			[renderer = &viewportWorld.AddSystem<RenderingSystem>()](const GameSimulationStep& step)
-			{
-				renderer->RecordStep(step);
-			};
-	}
-
-	StartSimulation(std::move(callback));
+	viewportWorld.GetEventManager().InvokeEventsForAllComponents(sOnSimulationStart);
+	StartSimulation();
 }
 
-void RTS::SimulationComponent::StartSimulation(std::function<void(const GameSimulationStep&)> onStepCompleted)
+void RTS::SimulationComponent::StartSimulation()
 {
-	mOnStepCompletedCallback = std::move(onStepCompleted);
 	mCurrentState = std::make_unique<GameState>(mTeam1Script, mTeam2Script);
 
 	if (mRunOnCallingThread)
@@ -43,6 +31,16 @@ void RTS::SimulationComponent::StartSimulation(std::function<void(const GameSimu
 void RTS::SimulationComponent::WaitForComplete()
 {
 	mThread.join();
+}
+
+void RTS::SimulationComponent::OnPreEvaluate(entt::entity entity)
+{
+	Internal::OnUnitEvaluateTarget target{
+	.sCurrentState = &GetGameState(),
+	.sNextStep = &mEvaluateStep,
+	.sCurrentUnit = entity
+	};
+	Internal::SetOnUnitEvaluateTargetForCurrentThread(target);
 }
 
 void RTS::SimulationComponent::InvokeEvaluateEvents()
@@ -75,12 +73,7 @@ void RTS::SimulationComponent::InvokeEvaluateEvents()
 					CE::MetaAny{ entity }
 				};
 
-				Internal::OnUnitEvaluateTarget target{
-					.sCurrentState = &GetGameState(),
-					.sNextStep = &mEvaluateStep,
-					.sCurrentUnit = entity
-				};
-				Internal::SetOnUnitEvaluateTargetForCurrentThread(target);
+				OnPreEvaluate(entity);
 
 				func.InvokeUnchecked(std::span{ args.data() + isStatic, static_cast<size_t>(3 - isStatic) }, 
 					std::span{ argForms.data() + isStatic, static_cast<size_t>(3 - isStatic) });
@@ -157,7 +150,8 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 		physics.UpdateBVHs({ .mForceRebuild = evaluateStepNum == 0 });
 
 		mEvaluateStep.ForEachCommandBuffer(clearBuffers);
-		InvokeEvaluateEvents();
+
+		mInvokeEvaluateEvents();
 
 		for (int simulateStepNum = 0; simulateStepNum < Constants::sNumSimulationStepsBetweenEvaluate; simulateStepNum++)
 		{
