@@ -239,6 +239,11 @@
     <ClCompile Include="Source\Core\ScriptingAPI.cpp" />
     <ClCompile Include="Source\Core\UnitFilter.cpp" />
     <ClCompile Include="Source\Components\ScriptExamples\BasicCombat.cpp" />
+    <ClCompile Include="Source\EditorSystems\ScriptGeneratorEditorSystem.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Source\Scripting\CompiledProgram.cpp" />
     <ClCompile Include="Source\States\FleeFromEntityState.cpp" />
     <ClCompile Include="Source\States\MoveToEntityState.cpp" />
     <ClCompile Include="Source\States\ShootAtEntityState.cpp" />
@@ -269,6 +274,7 @@
     <ClInclude Include="Include\Core\UnitFilter.h" />
     <ClInclude Include="Include\Core\UnitTypes.h" />
     <ClInclude Include="Include\Core\WeaponTypes.h" />
+    <ClInclude Include="Include\EditorSystems\ScriptGeneratorEditorSystem.h" />
     <ClInclude Include="Include\ScriptingRTS\Precomp.h" />
     <ClInclude Include="Include\Scripting\CompiledProgram.h" />
     <ClInclude Include="Include\States\FleeFromEntityState.h" />
