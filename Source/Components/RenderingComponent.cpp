@@ -6,7 +6,7 @@
 #include "Systems/RenderingSystem.h"
 #include "Utilities/Reflect/ReflectComponentType.h"
 
-void RTS::RenderingComponent::OnSimulationStart(CE::World& viewportWorld, entt::entity owner)
+void RTS::RenderingComponent::OnSimulationStart(CE::World& viewportWorld, entt::entity)
 {
 	SimulationComponent& sim = viewportWorld.GetRegistry().GetAny<SimulationComponent>();
 

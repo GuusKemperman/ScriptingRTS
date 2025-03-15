@@ -18,15 +18,13 @@ namespace
 	};
 	void TestSymmetry(TestParams params)
 	{
+		std::optional<std::vector<std::pair<entt::entity, entt::entity>>> pairs{};
 		RTS::SimulationComponent sim{};
 
 		sim.mUsePhysics = params.mUsePhysics;
 		sim.mUseMultiThreading = params.mUseMultiThreading;
 		sim.mRunOnCallingThread = true;
-
-		std::optional<std::vector<std::pair<entt::entity, entt::entity>>> pairs{};
-		sim.StartSimulation(
-			[&](const RTS::GameSimulationStep& )
+		sim.mOnStepCompletedCallback = [&](const RTS::GameSimulationStep&)
 			{
 				const CE::Registry& reg = sim.GetGameState().GetWorld().GetRegistry();
 
@@ -69,7 +67,9 @@ namespace
 
 					TEST_ASSERT(IsMirroredPos(disk1.mCentre, disk2.mCentre));
 				}
-			});
+			};
+
+		sim.StartSimulation();
 	}
 }
 

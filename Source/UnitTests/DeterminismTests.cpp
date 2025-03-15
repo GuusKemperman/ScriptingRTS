@@ -19,12 +19,13 @@ UNIT_TEST(Determinism, EqualSteps)
 	for (auto& [sim, steps] : simulations)
 	{
 		sim.mStartingTotalNumOfUnits = 100;
-
-		sim.StartSimulation(
+		sim.mOnStepCompletedCallback =
 			[&steps](const RTS::GameSimulationStep& step)
 			{
 				steps.emplace_back(step);
-			});
+			};
+
+		sim.StartSimulation();
 	}
 
 	for (auto& [sim, steps] : simulations)
@@ -68,10 +69,10 @@ UNIT_TEST(Determinism, EqualSteps)
 UNIT_TEST(Determinism, ApplySteps)
 {
 	RTS::SimulationComponent sim{};
-	sim.mStartingTotalNumOfUnits = 1000;
 	RTS::GameState gameState{ sim.mTeam1Script, sim.mTeam2Script };
 
-	sim.StartSimulation(
+	sim.mStartingTotalNumOfUnits = 1000;
+	sim.mOnStepCompletedCallback = 
 		[&](const RTS::GameSimulationStep& step)
 		{
 			gameState.Step(step);
@@ -80,6 +81,8 @@ UNIT_TEST(Determinism, ApplySteps)
 			BinaryGSONObject replicatedWorld = Archiver::Serialize(gameState.GetWorld());
 
 			TEST_EQUAL(realWorld, replicatedWorld);
-		});
+		};
+
+	sim.StartSimulation();
 	sim.WaitForComplete();
 }

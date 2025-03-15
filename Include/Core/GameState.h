@@ -21,6 +21,19 @@ namespace RTS
 
 		const CE::ComponentFilter& GetTeamScript(TeamId team);
 
+		enum class GameResult
+		{
+			Undetermined,
+			Victory,
+			Draw,
+			Defeat
+		};
+		GameResult GetGameResult(TeamId team) const;
+
+		bool IsGameOver() const;
+
+		float GetScore(TeamId team) const;
+
 	private:
 		CE::World mWorld{ false };
 		uint32 mNumStepsCompleted{};

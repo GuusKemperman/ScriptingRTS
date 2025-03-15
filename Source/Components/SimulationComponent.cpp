@@ -225,6 +225,11 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 
 				mOnStepCompletedCallback(mSimulateStep);
 			}
+
+			if (GetGameState().IsGameOver())
+			{
+				goto exit;
+			}
 		}
 	}
 exit:;

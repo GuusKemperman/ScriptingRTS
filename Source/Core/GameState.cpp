@@ -79,3 +79,53 @@ const CE::ComponentFilter& RTS::GameState::GetTeamScript(TeamId team)
 	}
 	return mTeam2Script;
 }
+
+RTS::GameState::GameResult RTS::GameState::GetGameResult(TeamId team) const
+{
+	if (mNumStepsCompleted == 0)
+	{
+		return GameResult::Undetermined;
+	}
+
+	const float scoreAllies = GetScore(team);
+	const float scoreEnemies = GetScore(SwitchTeams(team));
+
+	if (mNumStepsCompleted == Constants::sTotalNumSimulationSteps)
+	{
+		if (scoreAllies == scoreEnemies)
+		{
+			return GameResult::Draw;
+		}
+		if (scoreAllies < scoreEnemies)
+		{
+			return GameResult::Defeat;
+		}
+		return GameResult::Victory;
+	}
+
+	if (scoreAllies == 0.0f && scoreEnemies == 0.0f)
+	{
+		return GameResult::Draw;
+	}
+	if (scoreAllies == 0.0f)
+	{
+		return GameResult::Defeat;
+	}
+	if (scoreEnemies == 0.0f)
+	{
+		return GameResult::Victory;
+	}
+
+	return GameResult::Undetermined;
+}
+
+bool RTS::GameState::IsGameOver() const
+{
+	return GetGameResult(TeamId::Team1) != GameResult::Undetermined;
+}
+
+float RTS::GameState::GetScore(TeamId team) const
+{
+	const entt::sparse_set* storage = mWorld.GetRegistry().Storage(GetTeamTagStorage(team));
+	return storage == nullptr ? 0.0f : static_cast<float>(storage->size());
+}
