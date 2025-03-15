@@ -2,6 +2,7 @@
 #include "Core/ScriptingAPI.h"
 
 #include "Core/GameEvaluateStep.h"
+#include "Meta/ReflectedTypes/ReflectEnums.h"
 #include "States/FleeFromEntityState.h"
 #include "States/MoveToEntityState.h"
 #include "States/ShootAtEntityState.h"
@@ -41,25 +42,25 @@ void RTS::Internal::SetOnUnitEvaluateTargetForCurrentThread(OnUnitEvaluateTarget
 	sTarget = target;
 }
 
-bool RTS::RTSAPI::MoveToEntity(UnitFilter target)
+bool RTS::RTSAPI::Action(RTS::Action action, UnitFilter target)
 {
-	return EnterState<MoveToEntityState>(target);
+	switch (action)
+	{
+	case Action::MoveTo:
+		return EnterState<MoveToEntityState>(target);
+	case Action::FleeFrom:
+		return EnterState<FleeFromEntityState>(target);
+	case Action::ShootAt:
+		return EnterState<ShootAtEntityState>(target);
+	}
+	ABORT;
+	return false;
 }
 
-bool RTS::RTSAPI::ShootAt(UnitFilter target)
-{
-	return EnterState<ShootAtEntityState>(target);
-}
-
-bool RTS::RTSAPI::Exists(UnitFilter target)
+bool RTS::RTSAPI::Condition(UnitFilter target)
 {
 	CheckTarget();
 	return target(sTarget.sCurrentState->GetWorld(), sTarget.sCurrentUnit) != entt::null;
-}
-
-bool RTS::RTSAPI::Flee(UnitFilter from)
-{
-	return EnterState<FleeFromEntityState>(from);
 }
 
 CE::MetaType RTS::RTSAPI::Reflect()
@@ -67,13 +68,18 @@ CE::MetaType RTS::RTSAPI::Reflect()
 	CE::MetaType metaType{ CE::MetaType::T<RTSAPI>{}, "RTS" };
 	metaType.GetProperties().Add(CE::Props::sIsScriptableTag);
 
-	metaType.AddFunc(&RTSAPI::MoveToEntity,
-		"MoveToEntity",
+	metaType.AddFunc(&RTSAPI::Action,
+		"Action",
 		"Target").GetProperties().Add(CE::Props::sIsScriptableTag).Set(CE::Props::sIsScriptPure, false);
 
-	metaType.AddFunc(&RTSAPI::ShootAt,
-		"ShootAt",
-		"Target").GetProperties().Add(CE::Props::sIsScriptableTag).Set(CE::Props::sIsScriptPure, false);
+	metaType.AddFunc(&RTSAPI::Condition,
+		"Condition",
+		"Target").GetProperties().Add(CE::Props::sIsScriptableTag).Set(CE::Props::sIsScriptPure, true);
 
 	return metaType;
+}
+
+CE::MetaType Reflector<RTS::Action>::Reflect()
+{
+	return CE::ReflectEnumType<RTS::Action>(true);
 }

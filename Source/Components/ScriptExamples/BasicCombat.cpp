@@ -6,10 +6,10 @@
 
 void RTS::Examples::BasicCombatComponent::OnUnitEvaluate(CE::World&, entt::entity)
 {
-	/**/   (RTSAPI::Exists({ .mTeam = TeamFilter::Myself, .mHealth = HealthFilter::Below50 })
-	 &&		RTSAPI::Flee({ .mTeam = TeamFilter::Enemy }))
-	 ||		RTSAPI::ShootAt({ .mTeam = TeamFilter::Enemy, .mRange = RangeFilter::InMidRangeOrCloser })
-	 ||		RTSAPI::MoveToEntity({ .mTeam = TeamFilter::Enemy });
+	/**/   (RTSAPI::Condition({ .mTeam = TeamFilter::Myself, .mHealth = HealthFilter::Below50 })
+	 &&		RTSAPI::Action(Action::FleeFrom, { .mTeam = TeamFilter::Enemy }))
+	 ||		RTSAPI::Action(Action::ShootAt, { .mTeam = TeamFilter::Enemy, .mRange = RangeFilter::InMidRangeOrCloser })
+	 ||		RTSAPI::Action(Action::MoveTo, { .mTeam = TeamFilter::Enemy });
 	/**/
 }
 

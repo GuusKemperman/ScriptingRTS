@@ -271,6 +271,7 @@
     <ClInclude Include="Include\Core\WeaponTypes.h" />
     <ClInclude Include="Include\ScriptingRTS\Precomp.h" />
     <ClInclude Include="Include\Scripting\CompiledProgram.h" />
+    <ClInclude Include="Include\States\FleeFromEntityState.h" />
     <ClInclude Include="Include\States\MoveToEntityState.h" />
     <ClInclude Include="Include\States\ShootAtEntityState.h" />
     <ClInclude Include="Include\States\TargetEntityWhileConditionState.h" />

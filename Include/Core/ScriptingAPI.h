@@ -33,15 +33,18 @@ namespace RTS
 		void SetOnUnitEvaluateTargetForCurrentThread(OnUnitEvaluateTarget target);
 	}
 
+	enum class Action
+	{
+		MoveTo,
+		FleeFrom,
+		ShootAt
+	};
+
 	struct RTSAPI
 	{
-		static bool MoveToEntity(UnitFilter target);
+		static bool Action(Action action, UnitFilter target);
 
-		static bool ShootAt(UnitFilter target);
-
-		static bool Exists(UnitFilter target);
-
-		static bool Flee(UnitFilter from);
+		static bool Condition(UnitFilter target);
 
 	private:
 		friend CE::ReflectAccess;
@@ -49,3 +52,10 @@ namespace RTS
 		REFLECT_AT_START_UP(RTSAPI);
 	};
 }
+
+template<>
+struct Reflector<RTS::Action>
+{
+	static CE::MetaType Reflect();
+};
+REFLECT_AT_START_UP(rtsAction, RTS::Action);
