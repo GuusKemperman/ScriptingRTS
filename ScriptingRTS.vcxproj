@@ -236,6 +236,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='EditorDebug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Source\Core\PlayerDataBase.cpp" />
     <ClCompile Include="Source\Core\ScriptingAPI.cpp" />
     <ClCompile Include="Source\Core\UnitFilter.cpp" />
     <ClCompile Include="Source\Components\ScriptExamples\BasicCombat.cpp" />
@@ -269,6 +270,7 @@
     <ClInclude Include="Include\Core\GameSimulationStep.h" />
     <ClInclude Include="Include\Core\GameState.h" />
     <ClInclude Include="Include\Core\GameStepBase.h" />
+    <ClInclude Include="Include\Core\PlayerDataBase.h" />
     <ClInclude Include="Include\Core\RTSCollisionLayers.h" />
     <ClInclude Include="Include\Core\ScriptingAPI.h" />
     <ClInclude Include="Include\Core\UnitFilter.h" />

@@ -24,10 +24,14 @@ namespace RTS
 		bool operator==(const CompiledProgram&) const = default;
 		bool operator!=(const CompiledProgram&) const = default;
 
+		static void swap(CompiledProgram& lhs, CompiledProgram& rhs)
+		{
+			std::swap(lhs.mInstructions, rhs.mInstructions);
+		}
+
 		std::vector<CompiledInstruction> mInstructions{};
 	};
 }
-
 #ifdef EDITOR
 IMGUI_AUTO_DEFINE_INLINE(template<>, RTS::CompiledInstruction, var.DisplayWidget(name);)
 #endif // EDITOR

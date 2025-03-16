@@ -18,56 +18,57 @@ void RTS::ScriptGeneratorEditorSystem::Tick(float deltaTime)
 
 	if (Begin())
 	{
-		CompiledProgram bestProgram = [this]()
-			{
-				std::shared_lock l{ mBestProgramMutex };
-				return mBestProgram;
-			}();
+		std::vector<std::shared_ptr<PlayerDataBase::Player>> topPlayers(100);
 
-		CE::ShowInspectUI("BestProgram", bestProgram.mInstructions);
+		{
+			auto [lock, allPlayers] = mPlayerDataBase.OpenForRead();
+			auto end = std::partial_sort_copy(
+				allPlayers.begin(), allPlayers.end(),
+				topPlayers.begin(), topPlayers.end(),
+				[](const std::shared_ptr<PlayerDataBase::Player>& lhs, const std::shared_ptr<PlayerDataBase::Player>& rhs)
+				{
+					return lhs->mElo > rhs->mElo;
+				});
+
+			topPlayers.erase(end, topPlayers.end());
+		}
+
+		for (size_t i = 0; i < topPlayers.size(); i++)
+		{
+			const PlayerDataBase::Player& player = *topPlayers[i];
+
+			ImGui::PushID(player.mName.c_str());
+			ImGui::Text("%i - ELO: %f | %s", static_cast<int>(i + 1), player.mElo, player.mName.c_str());
+			ImGui::SameLine();
+
+			if (ImGui::CollapsingHeader("Program"))
+			{
+				// TODO read-only inspecting
+				CE::ShowInspectUI("Instructions", const_cast<CompiledProgram&>(player.mProgram).mInstructions);
+			}
+			ImGui::PopID();
+		}
+
+		size_t numberOfPlayers = mPlayerDataBase.GetNumberOfPlayers();
+
+		if (numberOfPlayers > 1000)
+		{
+			float eraseAllWithELOLowerThan = topPlayers.back()->mElo;
+
+			auto [lock, players] = mPlayerDataBase.OpenForWrite();
+
+			std::erase_if(players, [&](const std::shared_ptr<PlayerDataBase::Player>& player)
+				{
+					return player->mElo < eraseAllWithELOLowerThan;
+				});
+		}
+
 		End();
 	}
 }
 
 void RTS::ScriptGeneratorEditorSystem::SimulateThread(const std::stop_token& stop)
 {
-	auto isTeam1Better = [&](const CompiledProgram& team1, const CompiledProgram& team2)
-		{
-			float currentProgramScore{};
-			float bestProgramScore{};
-
-			SimulationComponent sim{};
-			sim.mUseMultiThreading = false;
-			sim.mRunOnCallingThread = true;
-			sim.mUsePhysics = false;
-			sim.mStartingTotalNumOfUnits = 2;
-
-			sim.mInvokeEvaluateEvents =
-				[&]()
-				{
-					const CE::Registry& reg = sim.GetGameState().GetWorld().GetRegistry();
-
-					for (entt::entity entity : reg.View<Team1Tag>())
-					{
-						sim.OnPreEvaluate(entity);
-						team1.Run();
-					}
-
-					for (entt::entity entity : reg.View<Team2Tag>())
-					{
-						sim.OnPreEvaluate(entity);
-						team2.Run();
-					}
-				};
-
-			sim.StartSimulation();
-
-			currentProgramScore = sim.GetGameState().GetScore(TeamId::Team1);
-			bestProgramScore = sim.GetGameState().GetScore(TeamId::Team2);
-
-			return currentProgramScore > bestProgramScore;
-		};
-
 	auto randomizeProgram = [](CompiledProgram& program)
 		{
 			program.mInstructions.clear();
@@ -90,32 +91,48 @@ void RTS::ScriptGeneratorEditorSystem::SimulateThread(const std::stop_token& sto
 			}
 		};
 
+	auto randomName = []()
+		{
+			std::string output = "The ";
+
+			static constexpr std::array adjectives =
+			{
+				"great", "amazing", "tragic", "horrible", "gruesome", "deadly", "beautiful", "historic", "unnecessary", "necessary", "unforeseen", "long awaited"
+			};
+			output = adjectives[CE::Random::Range<size_t>(0, adjectives.size())];
+			output.push_back(' ');
+
+			static constexpr std::array vowelishSyllables = { "a", "e", "u", "i", "o", "oo", "ea" };
+			static constexpr std::array consonantishSyllable = { "w", "r", "t", "y", "p", "s", "d", "f", "g", "j", "k", "br", "ch", "rt", "tr", "pr", "dr", "sh", "ng" };
+
+			bool lastSylableWasVowel = CE::Random::Value<bool>();
+			const size_t numSylables = CE::Random::Range(5, 13);
+			for (size_t i = 0; i < numSylables; i++)
+			{
+				const char* whatToAppendThisCycle{};
+				if (lastSylableWasVowel)
+				{
+					whatToAppendThisCycle = consonantishSyllable[CE::Random::Range<size_t>(0, consonantishSyllable.size())];
+				}
+				else
+				{
+					whatToAppendThisCycle = vowelishSyllables[CE::Random::Range<size_t>(0, vowelishSyllables.size())];
+				}
+				output.append(whatToAppendThisCycle);
+				lastSylableWasVowel = !lastSylableWasVowel;
+			}
+
+			return output;
+		};
+
 	std::array<CompiledProgram, 16> programs{};
 	std::for_each(std::execution::par_unseq, programs.begin(), programs.end(),
 		[&](CompiledProgram& program)
 		{
-			randomizeProgram(program);
-
 			while (!stop.stop_requested())
 			{
-				CompiledProgram bestProgram = [this]()
-					{
-						std::shared_lock l{ mBestProgramMutex };
-						return mBestProgram;
-					}();
-
-				if (!isTeam1Better(program, bestProgram))
-				{
-					randomizeProgram(program);
-					continue;
-				}
-
-				std::unique_lock l{ mBestProgramMutex };
-
-				if (bestProgram == mBestProgram)
-				{
-					mBestProgram = program;
-				}
+				randomizeProgram(program);
+				mPlayerDataBase.AddPlayer(program, randomName());
 			}
 		});
 }

@@ -1,3 +1,4 @@
+#include "Core/PlayerDataBase.h"
 #ifdef EDITOR
 #pragma once
 #include "EditorSystems/EditorSystem.h"
@@ -23,9 +24,7 @@ namespace RTS
 
 		void SimulateThread(const std::stop_token& stop);
 
-		std::shared_mutex mBestProgramMutex{};
-		CompiledProgram mBestProgram{};
-
+		PlayerDataBase mPlayerDataBase{};
 		std::jthread mThread{};
 	};
 }

@@ -9,6 +9,7 @@
 #include "World/Registry.h"
 
 RTS::GameState::GameState(CE::ComponentFilter team1Script, CE::ComponentFilter team2Script) :
+	mWorld(std::make_unique<CE::World>(false)),
 	mTeam1Script(team1Script),
 	mTeam2Script(team2Script)
 {
@@ -39,14 +40,20 @@ RTS::GameState::GameState(CE::ComponentFilter team1Script, CE::ComponentFilter t
 		return;
 	}
 
-	level->LoadIntoWorld(mWorld);
+	level->LoadIntoWorld(*mWorld);
 }
+
+RTS::GameState::GameState(GameState&&) noexcept = default;
+
+RTS::GameState& RTS::GameState::operator=(GameState&&) noexcept = default;
+
+RTS::GameState::~GameState() = default;
 
 void RTS::GameState::Step(const GameSimulationStep& step)
 {
-	if (!mWorld.HasBegunPlay())
+	if (!GetWorld().HasBegunPlay())
 	{
-		mWorld.BeginPlay();
+		GetWorld().BeginPlay();
 	}
 
 	step.ForEachCommandBuffer(
@@ -55,7 +62,7 @@ void RTS::GameState::Step(const GameSimulationStep& step)
 			T::Execute(*this, commandBuffer.GetStoredCommands());
 		});
 
-	CE::Registry& reg = mWorld.GetRegistry();
+	CE::Registry& reg = GetWorld().GetRegistry();
 
 	// The order that entities are destroyed in affects
 	// the iteration order and (i believe) the distribution
@@ -126,6 +133,6 @@ bool RTS::GameState::IsGameOver() const
 
 float RTS::GameState::GetScore(TeamId team) const
 {
-	const entt::sparse_set* storage = mWorld.GetRegistry().Storage(GetTeamTagStorage(team));
+	const entt::sparse_set* storage = GetWorld().GetRegistry().Storage(GetTeamTagStorage(team));
 	return storage == nullptr ? 0.0f : static_cast<float>(storage->size());
 }

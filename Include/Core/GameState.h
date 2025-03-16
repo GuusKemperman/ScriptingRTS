@@ -1,7 +1,11 @@
 #pragma once
 #include "Components/TeamTag.h"
 #include "Utilities/ComponentFilter.h"
-#include "World/World.h"
+
+namespace CE
+{
+	class World;
+}
 
 namespace RTS
 {
@@ -12,10 +16,18 @@ namespace RTS
 	public:
 		GameState(CE::ComponentFilter team1Script, CE::ComponentFilter team2Script);
 
+		GameState(const GameState&) = delete;
+		GameState(GameState&&) noexcept;
+
+		GameState& operator=(const GameState&) = delete;
+		GameState& operator=(GameState&&) noexcept;
+
+		~GameState();
+
 		void Step(const GameSimulationStep& step);
 
-		CE::World& GetWorld() { return mWorld; }
-		const CE::World& GetWorld() const { return mWorld; }
+		CE::World& GetWorld() { return *mWorld; }
+		const CE::World& GetWorld() const { return *mWorld; }
 
 		uint32 GetNumStepsCompleted() const { return mNumStepsCompleted; }
 
@@ -35,7 +47,7 @@ namespace RTS
 		float GetScore(TeamId team) const;
 
 	private:
-		CE::World mWorld{ false };
+		std::unique_ptr<CE::World> mWorld;
 		uint32 mNumStepsCompleted{};
 
 		CE::ComponentFilter mTeam1Script{};
