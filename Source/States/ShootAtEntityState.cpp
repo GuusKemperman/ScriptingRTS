@@ -49,7 +49,7 @@ void RTS::ShootAtEntityState::Execute(const GameState& gameState,
 			const CE::TransformedDisk& targetDisk = diskStorage->get(target);
 
 			const WeaponType weaponType = GetWeaponType(weapon.mType);
-			const float range2 = CE::Math::sqr(weaponType.mRange.mNamedRanges.mLongRangeEnd);
+			const float range2 = CE::Math::sqr(weaponType.mRangeDistance.mNamedRanges.mLongRangeEnd);
 			const float dist2 = glm::distance2(unitDisk.mCentre, targetDisk.mCentre);
 
 			if (dist2 > range2)

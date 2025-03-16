@@ -30,7 +30,18 @@ namespace RTS
 				float mLongRangeEnd{};
 			} mNamedRanges;
 			std::array<float, magic_enum::enum_count<WeaponRange>()> sRangeEnds{};
-		} mRange;
+		} mRangeDistance;
+
+		union
+		{
+			struct NamedRange
+			{
+				float mShortRangeAccuracy{};
+				float mMidRangeAccuracy{};
+				float mLongRangeAccuracy{};
+			} mNamedRanges;
+			std::array<float, magic_enum::enum_count<WeaponRange>()> sAccuracies{};
+		} mRangeAccuracy;
 
 		float mDamage{};
 		float mFireCooldown{};
@@ -41,10 +52,11 @@ namespace RTS
 
 	static constexpr std::array<WeaponType, WeaponType::WEAPON_TYPE_COUNT> sWeaponTypes{
 		WeaponType{
-			.mRange = { 5.0f, 25.0f, 50.0f },
-			.mDamage = 0.5f,
-			.mFireCooldown = .5f,
-			.mProjectileTimeUntilImpact = .4f
+			.mRangeDistance = { 3.0f, 8.0f, 15.0f },
+			.mRangeAccuracy = { 0.95f, 0.55f, 0.15f },
+			.mDamage = 1800.0f,
+			.mFireCooldown = .3f,
+			.mProjectileTimeUntilImpact = .2f
 		}
 	};
 

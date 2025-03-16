@@ -124,7 +124,7 @@ entt::entity RTS::UnitFilter::operator()(const CE::World& world, entt::entity re
 
 			const WeaponType& weaponType = GetWeaponType(weapon->mType);
 
-			const auto& range = weaponType.mRange.mNamedRanges;
+			const auto& range = weaponType.mRangeDistance.mNamedRanges;
 
 			switch (mRange)
 			{
