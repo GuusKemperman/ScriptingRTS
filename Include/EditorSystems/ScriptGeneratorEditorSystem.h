@@ -1,4 +1,3 @@
-#include "Core/PlayerDataBase.h"
 #ifdef EDITOR
 #pragma once
 #include "EditorSystems/EditorSystem.h"
@@ -6,6 +5,8 @@
 #include <shared_mutex>
 
 #include "Scripting/CompiledProgram.h"
+#include "Core/PlayerDataBase.h"
+#include "Rendering/FrameBuffer.h"
 
 namespace RTS
 {
@@ -24,7 +25,12 @@ namespace RTS
 
 		void SimulateThread(const std::stop_token& stop);
 
+		CE::FrameBuffer mViewportFrameBuffer{};
+		std::shared_ptr<const PlayerDataBase::Player> mCurrentlyWatchedPlayer{};
+		std::unique_ptr<CE::World> mCurrentlyWatchedWorld{};
+
 		PlayerDataBase mPlayerDataBase{};
+
 		std::jthread mThread{};
 	};
 }

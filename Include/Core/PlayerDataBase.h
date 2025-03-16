@@ -27,10 +27,9 @@ namespace RTS
 
 		std::pair<std::unique_lock<std::shared_mutex>, std::vector<std::shared_ptr<Player>>&> OpenForWrite();
 
-	private:
-
 		std::shared_ptr<Player> FindMatch(const Player& forPlayer);
 
+	private:
 		static GameState Battle(const Player& team1, const Player& team2);
 
 		static void UpdateELO(Player& team1, Player& team2, const GameState& result);

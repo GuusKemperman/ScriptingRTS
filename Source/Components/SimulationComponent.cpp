@@ -43,6 +43,27 @@ void RTS::SimulationComponent::OnPreEvaluate(entt::entity entity)
 	Internal::SetOnUnitEvaluateTargetForCurrentThread(target);
 }
 
+void RTS::SimulationComponent::SetCompiledScripts(CompiledProgram team1, CompiledProgram team2)
+{
+	mInvokeEvaluateEvents =
+		[this, team1Program = std::move(team1), team2Program = std::move(team2)]
+		{
+			const CE::Registry& reg = GetGameState().GetWorld().GetRegistry();
+
+			for (entt::entity entity : reg.View<Team1Tag>())
+			{
+				OnPreEvaluate(entity);
+				team1Program.Run();
+			}
+
+			for (entt::entity entity : reg.View<Team2Tag>())
+			{
+				OnPreEvaluate(entity);
+				team2Program.Run();
+			}
+		};
+}
+
 void RTS::SimulationComponent::InvokeEvaluateEvents()
 {
 	CE::World& world = GetGameState().GetWorld();
@@ -88,6 +109,11 @@ void RTS::SimulationComponent::InvokeEvaluateEvents()
 			std::for_each(view.begin(), view.end(), evaluateEntity);
 		}
 	}
+}
+
+RTS::SimulationComponent::~SimulationComponent()
+{
+
 }
 
 void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)

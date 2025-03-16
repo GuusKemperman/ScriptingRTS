@@ -8,10 +8,19 @@ void RTS::PlayerDataBase::AddPlayer(CompiledProgram program, std::string name)
 {
 	std::shared_ptr<Player> player = std::make_shared<Player>(std::move(program), std::move(name));
 
-	size_t numBattles = std::min(GetNumberOfPlayers(), 50ull);
-	for (int i = 0; i < numBattles; i++)
+	for (size_t i = 0; i < GetNumberOfPlayers(); i++)
 	{
-		std::shared_ptr opponent = FindMatch(*player);
+		std::shared_ptr opponent = 
+			[&]() -> std::shared_ptr<Player>
+			{
+				std::shared_lock l{ mPlayersMutex };
+
+				if (i < mPlayers.size())
+				{
+					return mPlayers[i];
+				}
+				return nullptr;
+			}();
 
 		if (opponent == nullptr)
 		{
@@ -42,15 +51,25 @@ std::pair<std::unique_lock<std::shared_mutex>, std::vector<std::shared_ptr<RTS::
 	return { std::unique_lock{ mPlayersMutex }, mPlayers };
 }
 
-std::shared_ptr<RTS::PlayerDataBase::Player> RTS::PlayerDataBase::FindMatch([[maybe_unused]] const Player& forPlayer)
+std::shared_ptr<RTS::PlayerDataBase::Player> RTS::PlayerDataBase::FindMatch(const Player& forPlayer)
 {
 	std::shared_lock l{ mPlayersMutex };
 
-	if (mPlayers.empty())
+	if (mPlayers.size() <= 1)
 	{
 		return nullptr;
 	}
-	return mPlayers[CE::Random::Range<size_t>(0, mPlayers.size())];
+
+	size_t randomIndex = CE::Random::Range<size_t>(0, mPlayers.size());
+	const std::shared_ptr<Player>& opponent = mPlayers[randomIndex];
+
+	if (opponent.get() == &forPlayer)
+	{
+		++randomIndex;
+		return mPlayers[randomIndex % mPlayers.size()];
+	}
+
+	return opponent;
 }
 
 RTS::GameState RTS::PlayerDataBase::Battle(const Player& team1, const Player& team2)
@@ -58,26 +77,10 @@ RTS::GameState RTS::PlayerDataBase::Battle(const Player& team1, const Player& te
 	SimulationComponent sim{};
 	sim.mUseMultiThreading = false;
 	sim.mRunOnCallingThread = true;
-	sim.mUsePhysics = false;
-	sim.mStartingTotalNumOfUnits = 2;
+	sim.mUsePhysics = true;
+	sim.mStartingTotalNumOfUnits = 16;
 
-	sim.mInvokeEvaluateEvents =
-		[&]()
-		{
-			const CE::Registry& reg = sim.GetGameState().GetWorld().GetRegistry();
-
-			for (entt::entity entity : reg.View<Team1Tag>())
-			{
-				sim.OnPreEvaluate(entity);
-				team1.mProgram.Run();
-			}
-
-			for (entt::entity entity : reg.View<Team2Tag>())
-			{
-				sim.OnPreEvaluate(entity);
-				team2.mProgram.Run();
-			}
-		};
+	sim.SetCompiledScripts(team1.mProgram, team2.mProgram);
 
 	sim.StartSimulation();
 	return std::move(sim.GetGameState());
@@ -85,20 +88,6 @@ RTS::GameState RTS::PlayerDataBase::Battle(const Player& team1, const Player& te
 
 void RTS::PlayerDataBase::UpdateELO(Player& team1, Player& team2, const GameState& result)
 {
-	std::shared_lock l1{ team1.mEloMutex };
-	std::shared_lock l2{ team2.mEloMutex };
-
-	float K1 = 800.0f / static_cast<float>(team1.mGamesPlayed + 1);
-	float K2 = 800.0f / static_cast<float>(team2.mGamesPlayed + 1);
-
-	float r1 = team1.mElo;
-	float r2 = team2.mElo;
-
-	// Calculate expected scores
-	float exponent = (r2 - r1) / 400.0f;
-	float e1 = 1.0f / (1.0f + std::pow(10.0f, exponent));
-	float e2 = 1.0f - e1;
-
 	float s1{};
 	float s2{};
 	switch (result.GetGameResult(TeamId::Team1))
@@ -117,6 +106,20 @@ void RTS::PlayerDataBase::UpdateELO(Player& team1, Player& team2, const GameStat
 		s2 = 1.0f;
 		break;
 	}
+
+	std::unique_lock l1{ team1.mEloMutex };
+	std::unique_lock l2{ team2.mEloMutex };
+
+	float K1 = 800.0f / static_cast<float>(team1.mGamesPlayed + 1);
+	float K2 = 800.0f / static_cast<float>(team2.mGamesPlayed + 1);
+
+	float r1 = team1.mElo;
+	float r2 = team2.mElo;
+
+	// Calculate expected scores
+	float exponent = (r2 - r1) / 400.0f;
+	float e1 = 1.0f / (1.0f + std::pow(10.0f, exponent));
+	float e2 = 1.0f - e1;
 
 	// Calculate rating changes using individual K factors
 	float delta1 = K1 * (s1 - e1);

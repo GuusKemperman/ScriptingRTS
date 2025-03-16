@@ -3,13 +3,36 @@
 
 #include <execution>
 
+#include "Assets/Level.h"
 #include "Components/SimulationComponent.h"
+#include "Core/AssetManager.h"
 #include "Utilities/Random.h"
+#include "Utilities/Imgui/ImguiHelpers.h"
+#include "Utilities/Imgui/WorldViewportPanel.h"
+
+namespace
+{
+	RTS::CompiledProgram GetBaseLine()
+	{
+		using namespace RTS;
+		CompiledProgram program{};
+		program.mInstructions.resize(2);
+
+		program.mInstructions[0].mAction = Action::ShootAt;
+		program.mInstructions[0].mFilter.mTeam = TeamFilter::Enemy;
+		program.mInstructions[0].mFilter.mRange = RangeFilter::InLongRange;
+
+		program.mInstructions[1].mAction = Action::MoveTo;
+		program.mInstructions[1].mFilter.mTeam = TeamFilter::Enemy;
+		return program;
+	}
+}
 
 RTS::ScriptGeneratorEditorSystem::ScriptGeneratorEditorSystem() :
 	EditorSystem("ScriptGeneratorEditorSystem"),
 	mThread([this](const std::stop_token& token) { SimulateThread(token); })
 {
+	mPlayerDataBase.AddPlayer(GetBaseLine(), "Baseline");
 }
 
 void RTS::ScriptGeneratorEditorSystem::Tick(float deltaTime)
@@ -33,25 +56,81 @@ void RTS::ScriptGeneratorEditorSystem::Tick(float deltaTime)
 			topPlayers.erase(end, topPlayers.end());
 		}
 
-		for (size_t i = 0; i < topPlayers.size(); i++)
+		static float viewportWidth = .75f;
+		static float scoreWidth = .25f;
+		ImGui::Splitter(true, &scoreWidth, &viewportWidth);
+
+		if (ImGui::BeginChild("Scoreboard", { scoreWidth, -2.0f }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav))
 		{
-			const PlayerDataBase::Player& player = *topPlayers[i];
-
-			ImGui::PushID(player.mName.c_str());
-			ImGui::Text("%i - ELO: %f | %s", static_cast<int>(i + 1), player.mElo, player.mName.c_str());
-			ImGui::SameLine();
-
-			if (ImGui::CollapsingHeader("Program"))
+			for (size_t i = 0; i < topPlayers.size(); i++)
 			{
-				// TODO read-only inspecting
-				CE::ShowInspectUI("Instructions", const_cast<CompiledProgram&>(player.mProgram).mInstructions);
+				const PlayerDataBase::Player& player = *topPlayers[i];
+
+				ImGui::PushID(player.mName.c_str());
+				ImGui::TextUnformatted(CE::Format("{} - ELO: {} - Games: {} | {}", 
+					static_cast<int>(i + 1), 
+					player.mElo, 
+					player.mGamesPlayed,
+					player.mName).c_str());
+				ImGui::SameLine();
+
+				if (ImGui::CollapsingHeader("Program"))
+				{
+					if (ImGui::Button("Show"))
+					{
+						mCurrentlyWatchedPlayer = topPlayers[i];
+						mCurrentlyWatchedWorld.reset();
+					}
+					// TODO read-only inspecting
+					CE::ShowInspectUI("Instructions", const_cast<CompiledProgram&>(player.mProgram).mInstructions);
+				}
+				ImGui::PopID();
 			}
-			ImGui::PopID();
 		}
+		ImGui::EndChild();
+		ImGui::SameLine();
+
+		if (ImGui::BeginChild("BattleTV", { viewportWidth, -2.0f }, false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav))
+		{
+			if (mCurrentlyWatchedPlayer != nullptr)
+			{
+				if (mCurrentlyWatchedWorld == nullptr)
+				{
+					CE::AssetHandle level = CE::AssetManager::Get().TryGetAsset<CE::Level>("L_SimulationConfig");
+					ASSERT(level != nullptr);
+					mCurrentlyWatchedWorld = level->CreateWorld(false);
+
+					CE::Registry& reg = mCurrentlyWatchedWorld->GetRegistry();
+					SimulationComponent& sim = reg.GetAny<SimulationComponent>();
+
+					sim.mUsePhysics = true;
+					sim.mStartingTotalNumOfUnits = 16;
+
+					std::shared_ptr<const PlayerDataBase::Player> opponent = mPlayerDataBase.FindMatch(*mCurrentlyWatchedPlayer);
+
+					if (opponent == nullptr)
+					{
+						opponent = mCurrentlyWatchedPlayer;
+					}
+
+					sim.SetCompiledScripts(mCurrentlyWatchedPlayer->mProgram, opponent->mProgram);
+					LOG(LogGame, Message, "{} ({}) vs {} ({})",
+						mCurrentlyWatchedPlayer->mName, mCurrentlyWatchedPlayer->mElo,
+						opponent->mName, opponent->mElo);
+
+					mCurrentlyWatchedWorld->BeginPlay();
+				}
+
+				mCurrentlyWatchedWorld->Tick(deltaTime);
+				CE::WorldViewportPanel::Display(*mCurrentlyWatchedWorld, mViewportFrameBuffer, nullptr);
+			}
+		}
+		ImGui::EndChild();
+
 
 		size_t numberOfPlayers = mPlayerDataBase.GetNumberOfPlayers();
 
-		if (numberOfPlayers > 1000)
+		if (numberOfPlayers > 200)
 		{
 			float eraseAllWithELOLowerThan = topPlayers.back()->mElo;
 
@@ -125,7 +204,7 @@ void RTS::ScriptGeneratorEditorSystem::SimulateThread(const std::stop_token& sto
 			return output;
 		};
 
-	std::array<CompiledProgram, 16> programs{};
+	std::array<CompiledProgram, 7> programs{};
 	std::for_each(std::execution::par_unseq, programs.begin(), programs.end(),
 		[&](CompiledProgram& program)
 		{

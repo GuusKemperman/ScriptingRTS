@@ -5,6 +5,7 @@
 #include "Core/GameEvaluateStep.h"
 #include "Core/GameSimulationStep.h"
 #include "Meta/Fwd/MetaReflectFwd.h"
+#include "Scripting/CompiledProgram.h"
 #include "Utilities/ComponentFilter.h"
 
 namespace CE
@@ -27,7 +28,10 @@ namespace RTS
 	class SimulationComponent
 	{
 		void InvokeEvaluateEvents();
+
 	public:
+		~SimulationComponent();
+
 		void OnBeginPlay(CE::World& world, entt::entity owner);
 
 		void StartSimulation();
@@ -44,6 +48,8 @@ namespace RTS
 		const GameState& GetGameState() const { return *mCurrentState; }
 
 		void OnPreEvaluate(entt::entity entity);
+
+		void SetCompiledScripts(CompiledProgram team1, CompiledProgram team2);
 
 		uint32 mStartingTotalNumOfUnits = 256;
 		uint32 mNumStepsCompleted{};
