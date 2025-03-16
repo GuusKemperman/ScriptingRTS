@@ -29,8 +29,7 @@ namespace
 }
 
 RTS::ScriptGeneratorEditorSystem::ScriptGeneratorEditorSystem() :
-	EditorSystem("ScriptGeneratorEditorSystem"),
-	mThread([this](const std::stop_token& token) { SimulateThread(token); })
+	EditorSystem("ScriptGeneratorEditorSystem")
 {
 	mPlayerDataBase.AddPlayer(GetBaseLine(), "Baseline");
 }
@@ -41,6 +40,11 @@ void RTS::ScriptGeneratorEditorSystem::Tick(float deltaTime)
 
 	if (Begin())
 	{
+		if (!mThread.joinable() && ImGui::Button("Start"))
+		{
+			mThread = std::jthread{ [this](const std::stop_token& token) { SimulateThread(token); } };
+		}
+
 		std::vector<std::shared_ptr<PlayerDataBase::Player>> topPlayers(100);
 
 		{
@@ -141,9 +145,8 @@ void RTS::ScriptGeneratorEditorSystem::Tick(float deltaTime)
 					return player->mElo < eraseAllWithELOLowerThan;
 				});
 		}
-
-		End();
 	}
+	End();
 }
 
 void RTS::ScriptGeneratorEditorSystem::SimulateThread(const std::stop_token& stop)

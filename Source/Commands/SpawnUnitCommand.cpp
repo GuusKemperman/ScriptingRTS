@@ -8,6 +8,7 @@
 #include "Components/Physics2D/PhysicsBody2DComponent.h"
 #include "Core/GameState.h"
 #include "Core/RTSCollisionLayers.h"
+#include "Utilities/Random.h"
 #include "World/Registry.h"
 
 void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitCommand> commands)
@@ -20,12 +21,13 @@ void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitC
 	auto& weaponStorage = reg.Storage<WeaponComponent>();
 	auto& healthStorage = reg.Storage<HealthComponent>();
 
+	auto& rngStorage = reg.Storage<CE::DefaultRandomEngine>();
+
 	auto& teamStorage = reg.Storage<TeamId>();
 	auto& team1Storage = reg.Storage<Team1Tag>();
 	auto& team2Storage = reg.Storage<Team2Tag>();
 
 	auto& unitStorage = reg.Storage<UnitType::Enum>();
-
 	auto& tankStorage = reg.Storage<TankTag>();
 
 	CE::CollisionRules rules{};
@@ -47,18 +49,27 @@ void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitC
 		}
 
 		transformStorage.emplace(entity, command.mPosition, type.mRadius);
-
 		unitStorage.emplace(entity, command.mUnitType);
-
 		teamStorage.emplace(entity, command.mTeamId);
 
 		switch (command.mTeamId)
 		{
-		case TeamId::Team1:	team1Storage.emplace(entity); rules.mLayer = CE::CollisionLayer::GameLayer0; break;
-		case TeamId::Team2:	team2Storage.emplace(entity); rules.mLayer = CE::CollisionLayer::GameLayer1; break;
+		case TeamId::Team1:
+		{
+			team1Storage.emplace(entity);
+			rules.mLayer = CE::CollisionLayer::GameLayer0;
+			break;
+		}
+		case TeamId::Team2:
+		{
+			team2Storage.emplace(entity);
+			rules.mLayer = CE::CollisionLayer::GameLayer1;
+			break;
+		}
 		default: ABORT;
 		}
 
+		rngStorage.emplace(entity);
 		physicsStorage.emplace(entity).mRules = rules;
 
 		switch (command.mUnitType)

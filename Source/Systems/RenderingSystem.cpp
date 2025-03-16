@@ -164,14 +164,16 @@ void RTS::RenderingSystem::Render(const CE::World& viewportWorld, CE::RenderComm
 
 		const glm::mat4 worldMat =
 			CE::TransformComponent::ToMatrix(CE::To3D(interpolatedPos, 2.0f),
-				glm::vec3{ .2f, .05f, 1.0f },
+				glm::vec3{ .1f, .025f, 1.0f },
 				interpolatedRot);
+
+		const glm::vec4 color = proj.mHasHit ? glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f } : glm::vec4{ 0.0f, 0.0f, 0.0f, .1f };
 
 		CE::Renderer::Get().AddStaticMesh(renderQueue,
 			mMesh,
 			mMat,
 			worldMat,
-			glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f },
+			color,
 			glm::vec4{ 0.0f });
 
 		CE::AddDebugLine(

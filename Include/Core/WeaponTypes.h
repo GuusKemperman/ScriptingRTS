@@ -56,7 +56,7 @@ namespace RTS
 			.mRangeAccuracy = { 0.95f, 0.55f, 0.15f },
 			.mDamage = 1800.0f,
 			.mFireCooldown = .3f,
-			.mProjectileTimeUntilImpact = .2f
+			.mProjectileTimeUntilImpact = .4f
 		}
 	};
 

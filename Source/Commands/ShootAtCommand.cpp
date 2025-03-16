@@ -7,6 +7,7 @@
 #include "Components/WeaponComponent.h"
 #include "Components/Physics2D/DiskColliderComponent.h"
 #include "Core/GameState.h"
+#include "Utilities/Random.h"
 #include "World/Registry.h"
 
 void RTS::ShootAtCommand::Execute(GameState& state, std::span<const ShootAtCommand> commands)
@@ -17,6 +18,7 @@ void RTS::ShootAtCommand::Execute(GameState& state, std::span<const ShootAtComma
 	auto& projectileStorage = reg.Storage<ProjectileComponent>();
 	auto& weaponStorage = reg.Storage<WeaponComponent>();
 	auto& healthStorage = reg.Storage<HealthComponent>();
+	auto& rngStorage = reg.Storage<CE::DefaultRandomEngine>();
 
 	for (const ShootAtCommand& command : commands)
 	{
@@ -32,6 +34,32 @@ void RTS::ShootAtCommand::Execute(GameState& state, std::span<const ShootAtComma
 		// + 1 cus we lower it by one in a second.
 		const int numStepsUntilImpact = weaponType.mNumStepsUntilImpact + 1;
 
+		const float distance = glm::distance(startPos, endPos);
+		const float accuracy = [&]()
+			{
+				float result = 0.0f;
+
+				size_t i = weaponType.mRangeDistance.sRangeEnds.size();
+				while (i --> 0)
+				{
+					if (distance > weaponType.mRangeDistance.sRangeEnds[i])
+					{
+						break;
+					}
+
+					result = weaponType.mRangeAccuracy.sAccuracies[i];
+				}
+
+				return result;
+			}();
+
+		const float randomNum = [&]
+			{
+				CE::DefaultRandomEngine& rng = rngStorage.get(command.mFiredBy);
+				std::uniform_real_distribution distribution{ 0.0f, 1.0f };
+				return distribution(rng);
+			}();
+
 		entt::entity projEntity = reg.Create();
 		projectileStorage.emplace(projEntity,
 			ProjectileComponent{
@@ -39,7 +67,8 @@ void RTS::ShootAtCommand::Execute(GameState& state, std::span<const ShootAtComma
 				.mTargetEntity = command.mTargetEntity,
 				.mSourcePosition = startPos,
 				.mTargetPosition = endPos,
-				.mNumStepsUntilImpact = numStepsUntilImpact
+				.mNumStepsUntilImpact = static_cast<uint8>(numStepsUntilImpact),
+				.mHasHit = randomNum <= accuracy
 			});
 	}
 
@@ -56,7 +85,8 @@ void RTS::ShootAtCommand::Execute(GameState& state, std::span<const ShootAtComma
 			continue;
 		}
 
-		if (!transformStorage.contains(proj.mTargetEntity))
+		if (!proj.mHasHit 
+			|| !transformStorage.contains(proj.mTargetEntity))
 		{
 			continue;
 		}

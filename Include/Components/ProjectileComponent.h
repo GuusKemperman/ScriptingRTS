@@ -15,5 +15,6 @@ namespace RTS
 		glm::vec2 mTargetPosition{};
 
 		int32 mNumStepsUntilImpact{};
+		int8 mHasHit : 1{};
 	};
 }

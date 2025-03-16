@@ -2,6 +2,7 @@
 
 #include "Components/SimulationComponent.h"
 #include "Core/UnitTests.h"
+#include "Utilities/Random.h"
 #include "World/Registry.h"
 
 namespace
@@ -52,15 +53,23 @@ namespace
 
 				auto* diskStorage = reg.Storage<CE::TransformedDiskColliderComponent>();
 				TEST_NOT_NULL(diskStorage);
+				auto* rngStorage = reg.Storage<CE::DefaultRandomEngine>();
+				TEST_NOT_NULL(rngStorage);
 
 				for (auto [entity1, entity2] : *pairs)
 				{
 					TEST_EQUAL(diskStorage->contains(entity1), diskStorage->contains(entity2));
+					TEST_EQUAL(rngStorage->contains(entity1), rngStorage->contains(entity2));
 
 					if (!diskStorage->contains(entity1))
 					{
 						continue;
 					}
+
+					auto rng1 = rngStorage->get(entity1);
+					auto rng2 = rngStorage->get(entity2);
+
+					TEST_EQUAL(rng1(), rng2());
 
 					auto& disk1 = diskStorage->get(entity1);
 					auto& disk2 = diskStorage->get(entity2);
