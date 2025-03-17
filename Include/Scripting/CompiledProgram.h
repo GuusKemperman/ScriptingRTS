@@ -10,11 +10,22 @@ namespace RTS
 		void DisplayWidget(const std::string& name);
 #endif
 
-		bool operator==(const CompiledInstruction&) const = default;
-		bool operator!=(const CompiledInstruction&) const = default;
+		bool operator==(const CompiledInstruction& other) const;
+		bool operator!=(const CompiledInstruction& other) const;
 
-		Action mAction{};
+		union
+		{
+			Action mAction{};
+			uint16 mAmountToJumpIfTrue;
+		};
 		UnitFilter mFilter{};
+
+		enum class Type : uint8
+		{
+			Action,
+			Condition
+		};
+		Type mType = Type::Action;
 	};
 
 	struct CompiledProgram

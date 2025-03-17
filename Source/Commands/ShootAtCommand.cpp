@@ -118,4 +118,15 @@ void RTS::ShootAtCommand::Execute(GameState& state, std::span<const ShootAtComma
 	{
 		--weapon.mNumStepsUntilCanFire;
 	}
+
+	// TODO find a better place for this logic
+	for (auto [entity, health, type] : reg.View<HealthComponent, UnitType::Enum>().each())
+	{
+		const UnitType& unitType = GetUnitType(type);
+
+		if (health.mHealth < unitType.mHealth)
+		{
+			health.mHealth = glm::min(unitType.mHealth, health.mHealth + unitType.mHealthRegeneration * Constants::sSimulationStepSize);
+		}
+	}
 }

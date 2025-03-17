@@ -16,11 +16,19 @@ namespace RTS
 		float mRadius{};
 		float mMovementSpeed{};
 		float mHealth{};
+		float mHealthRegeneration{};
 		WeaponType::Enum mWeaponType{};
 	};
 
 	static constexpr std::array<UnitType, UnitType::UNIT_TYPE_COUNT> sUnitTypes{
-		UnitType{ .mDisplayName = "Tank", .mRadius = .3f, .mMovementSpeed = 1.2f, .mHealth = 5000.0f, .mWeaponType = WeaponType::Rifle }
+		UnitType{
+			.mDisplayName = "Tank",
+			.mRadius = .3f,
+			.mMovementSpeed = 1.2f,
+			.mHealth = 5000.0f,
+			.mHealthRegeneration = 166.666667f,
+			.mWeaponType = WeaponType::Rifle
+		}
 	};
 
 	constexpr UnitType GetUnitType(UnitType::Enum type)

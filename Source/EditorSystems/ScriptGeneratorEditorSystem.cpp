@@ -12,7 +12,7 @@
 
 namespace
 {
-	RTS::CompiledProgram GetBaseLine()
+	RTS::CompiledProgram AttackAndMoveOnly()
 	{
 		using namespace RTS;
 		CompiledProgram program{};
@@ -20,10 +20,34 @@ namespace
 
 		program.mInstructions[0].mAction = Action::ShootAt;
 		program.mInstructions[0].mFilter.mTeam = TeamFilter::Enemy;
-		program.mInstructions[0].mFilter.mRange = RangeFilter::InLongRange;
+		program.mInstructions[0].mFilter.mRange = RangeFilter::InLongRangeOrCloser;
 
 		program.mInstructions[1].mAction = Action::MoveTo;
 		program.mInstructions[1].mFilter.mTeam = TeamFilter::Enemy;
+		return program;
+	}
+
+	RTS::CompiledProgram FleeAttackAndMoveOnly()
+	{
+		using namespace RTS;
+		CompiledProgram program{};
+		program.mInstructions.resize(4);
+
+		program.mInstructions[0].mType = CompiledInstruction::Type::Condition;
+		program.mInstructions[0].mFilter.mTeam = TeamFilter::Myself;
+		program.mInstructions[0].mFilter.mHealth = HealthFilter::Below50;
+		program.mInstructions[0].mAmountToJumpIfTrue = 3;
+
+		program.mInstructions[1].mAction = Action::ShootAt;
+		program.mInstructions[1].mFilter.mTeam = TeamFilter::Enemy;
+		program.mInstructions[1].mFilter.mRange = RangeFilter::InLongRangeOrCloser;
+
+		program.mInstructions[2].mAction = Action::MoveTo;
+		program.mInstructions[2].mFilter.mTeam = TeamFilter::Enemy;
+
+		program.mInstructions[3].mAction = Action::FleeFrom;
+		program.mInstructions[3].mFilter.mTeam = TeamFilter::Enemy;
+
 		return program;
 	}
 }
@@ -31,7 +55,8 @@ namespace
 RTS::ScriptGeneratorEditorSystem::ScriptGeneratorEditorSystem() :
 	EditorSystem("ScriptGeneratorEditorSystem")
 {
-	mPlayerDataBase.AddPlayer(GetBaseLine(), "Baseline");
+	mPlayerDataBase.AddPlayer(AttackAndMoveOnly(), "AttackAndMoveOnly");
+	mPlayerDataBase.AddPlayer(FleeAttackAndMoveOnly(), "FleeAttackAndMoveOnly");
 }
 
 void RTS::ScriptGeneratorEditorSystem::Tick(float deltaTime)
@@ -117,7 +142,7 @@ void RTS::ScriptGeneratorEditorSystem::Tick(float deltaTime)
 						opponent = mCurrentlyWatchedPlayer;
 					}
 
-					sim.SetCompiledScripts(mCurrentlyWatchedPlayer->mProgram, opponent->mProgram);
+					sim.SetCompiledScripts(mCurrentlyWatchedPlayer->mProgram, FleeAttackAndMoveOnly());
 					LOG(LogGame, Message, "{} ({}) vs {} ({})",
 						mCurrentlyWatchedPlayer->mName, mCurrentlyWatchedPlayer->mElo,
 						opponent->mName, opponent->mElo);
@@ -156,16 +181,32 @@ void RTS::ScriptGeneratorEditorSystem::SimulateThread(const std::stop_token& sto
 			program.mInstructions.clear();
 			program.mInstructions.resize(CE::Random::Range<size_t>(1, 32));
 
-			static constexpr auto randomEnum = []<typename T>(T & value)
+			static constexpr auto randomEnum = []<typename T>(T& value)
 			{
 				static constexpr auto values = magic_enum::enum_values<T>();
 				size_t index = CE::Random::Range<size_t>(0, values.size());
 				value = values[index];
 			};
 
-			for (CompiledInstruction& instruction : program.mInstructions)
+			for (size_t i = 0; i < program.mInstructions.size(); i++)
 			{
-				randomEnum(instruction.mAction);
+				CompiledInstruction& instruction = program.mInstructions[i];
+				randomEnum(instruction.mType);
+
+				switch (instruction.mType)
+				{
+				case CompiledInstruction::Type::Action:
+				{
+					randomEnum(instruction.mAction);
+					break;
+				}
+				case CompiledInstruction::Type::Condition:
+				{
+					instruction.mAmountToJumpIfTrue = static_cast<decltype(instruction.mAmountToJumpIfTrue)>
+						(CE::Random::Range<size_t>(0, program.mInstructions.size() - i));
+					break;
+				}
+				}
 				randomEnum(instruction.mFilter.mTeam);
 				randomEnum(instruction.mFilter.mSortByDistance);
 				randomEnum(instruction.mFilter.mRange);
