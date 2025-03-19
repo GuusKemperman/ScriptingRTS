@@ -18,7 +18,6 @@ namespace RTS
 		enum Enum : uint8
 		{
 			Rifle,
-			WEAPON_TYPE_COUNT
 		};
 
 		union
@@ -50,7 +49,7 @@ namespace RTS
 		int mNumStepsUntilImpact = static_cast<int>(CE::Math::Round(mProjectileTimeUntilImpact / Constants::sSimulationStepSize));
 	};
 
-	static constexpr std::array<WeaponType, WeaponType::WEAPON_TYPE_COUNT> sWeaponTypes{
+	static constexpr std::array<WeaponType, magic_enum::enum_count<WeaponType::Enum>()> sWeaponTypes{
 		WeaponType{
 			.mRangeDistance = { 3.0f, 8.0f, 15.0f },
 			.mRangeAccuracy = { 0.95f, 0.55f, 0.15f },

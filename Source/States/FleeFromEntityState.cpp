@@ -41,7 +41,7 @@ void RTS::FleeFromEntityState::Execute(const GameState& gameState, GameSimulatio
 				return;
 			}
 
-			const float movementSpeed = GetUnitProperty<&UnitType::mMovementSpeed>(unitStorage->get(unit));
+			const float movementSpeed = GetUnitType(unitStorage->get(unit)).mMovementSpeed;
 			const glm::vec2 direction = glm::normalize(currentPosition - fleeFromPosition);
 			const glm::vec2 nextPosition = currentPosition + direction * Constants::sSimulationStepSize * movementSpeed;
 

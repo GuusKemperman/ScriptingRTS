@@ -10,6 +10,8 @@
 #include "Utilities/Imgui/ImguiHelpers.h"
 #include "Utilities/Imgui/WorldViewportPanel.h"
 
+using namespace magic_enum::bitwise_operators;
+
 namespace
 {
 	RTS::CompiledProgram AttackAndMoveOnly()
@@ -19,11 +21,11 @@ namespace
 		program.mInstructions.resize(2);
 
 		program.mInstructions[0].mAction = Action::ShootAt;
-		program.mInstructions[0].mFilter.mTeam = TeamFilter::Enemy;
-		program.mInstructions[0].mFilter.mRange = RangeFilter::InLongRangeOrCloser;
+		program.mInstructions[0].mFilter.mTeam.mEnum = TeamFilter::Enemy;
+		program.mInstructions[1].mFilter.mRange.mEnum = RangeFilter::ShortRange | RangeFilter::MidRange | RangeFilter::LongRange;
 
 		program.mInstructions[1].mAction = Action::MoveTo;
-		program.mInstructions[1].mFilter.mTeam = TeamFilter::Enemy;
+		program.mInstructions[1].mFilter.mTeam.mEnum = TeamFilter::Enemy;
 		return program;
 	}
 
@@ -34,19 +36,19 @@ namespace
 		program.mInstructions.resize(4);
 
 		program.mInstructions[0].mType = CompiledInstruction::Type::Condition;
-		program.mInstructions[0].mFilter.mTeam = TeamFilter::Myself;
-		program.mInstructions[0].mFilter.mHealth = HealthFilter::Below50;
+		program.mInstructions[0].mFilter.mTeam.mEnum = TeamFilter::Myself;
+		program.mInstructions[0].mFilter.mHealth.mEnum = HealthFilter::From0To25 | HealthFilter::From25To50;
 		program.mInstructions[0].mAmountToJumpIfTrue = 3;
 
 		program.mInstructions[1].mAction = Action::ShootAt;
-		program.mInstructions[1].mFilter.mTeam = TeamFilter::Enemy;
-		program.mInstructions[1].mFilter.mRange = RangeFilter::InLongRangeOrCloser;
+		program.mInstructions[1].mFilter.mTeam.mEnum = TeamFilter::Enemy;
+		program.mInstructions[1].mFilter.mRange.mEnum = RangeFilter::ShortRange | RangeFilter::MidRange | RangeFilter::LongRange;
 
 		program.mInstructions[2].mAction = Action::MoveTo;
-		program.mInstructions[2].mFilter.mTeam = TeamFilter::Enemy;
+		program.mInstructions[2].mFilter.mTeam.mEnum = TeamFilter::Enemy;
 
 		program.mInstructions[3].mAction = Action::FleeFrom;
-		program.mInstructions[3].mFilter.mTeam = TeamFilter::Enemy;
+		program.mInstructions[3].mFilter.mTeam.mEnum = TeamFilter::Enemy;
 
 		return program;
 	}
@@ -188,6 +190,11 @@ void RTS::ScriptGeneratorEditorSystem::SimulateThread(const std::stop_token& sto
 				value = values[index];
 			};
 
+			static constexpr auto randomBitEnum = []<typename T>(T& value)
+			{
+				value = static_cast<T>(CE::Random::Value<std::underlying_type_t<T>>());
+			};
+
 			for (size_t i = 0; i < program.mInstructions.size(); i++)
 			{
 				CompiledInstruction& instruction = program.mInstructions[i];
@@ -207,10 +214,10 @@ void RTS::ScriptGeneratorEditorSystem::SimulateThread(const std::stop_token& sto
 					break;
 				}
 				}
-				randomEnum(instruction.mFilter.mTeam);
 				randomEnum(instruction.mFilter.mSortByDistance);
-				randomEnum(instruction.mFilter.mRange);
-				randomEnum(instruction.mFilter.mHealth);
+				randomEnum(instruction.mFilter.mTeam.mEnum);
+				randomEnum(instruction.mFilter.mRange.mEnum);
+				randomEnum(instruction.mFilter.mHealth.mEnum);
 			}
 		};
 

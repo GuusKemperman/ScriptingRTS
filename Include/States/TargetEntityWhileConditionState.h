@@ -1,7 +1,7 @@
 #pragma once
 #include "Components/Physics2D/DiskColliderComponent.h"
 #include "Core/GameState.h"
-#include "Core/UnitFilter.h"
+#include "Core/EntityFilter.h"
 #include "World/Registry.h"
 
 namespace RTS
@@ -19,13 +19,13 @@ namespace RTS
 
 		static std::optional<Derived> EnterState(const GameState& gameState,
 			entt::entity unit,
-			UnitFilter target);
+			EntityFilter target);
 
 		bool operator==(const TargetEntityWhileConditionState&) const = default;
 		bool operator!=(const TargetEntityWhileConditionState&) const = default;
 
 		entt::entity mRequestedByUnit = entt::null;
-		UnitFilter mTargetFilter{};
+		EntityFilter mTargetFilter{};
 	};
 
 	template <typename Derived>
@@ -46,7 +46,7 @@ namespace RTS
 				continue;
 			}
 
-			entt::entity target = state.mTargetFilter(gameState.GetWorld(), state.mRequestedByUnit);
+			entt::entity target = state.mTargetFilter(gameState, state.mRequestedByUnit);
 
 			if (target == entt::null)
 			{
@@ -59,9 +59,9 @@ namespace RTS
 
 	template <typename Derived>
 	std::optional<Derived> TargetEntityWhileConditionState<Derived>::EnterState(const GameState& gameState,
-		entt::entity unit, UnitFilter target)
+		entt::entity unit, EntityFilter target)
 	{
-		if (target(gameState.GetWorld(), unit) != entt::null)
+		if (target(gameState, unit) != entt::null)
 		{
 			return Derived{ unit, target };
 		}

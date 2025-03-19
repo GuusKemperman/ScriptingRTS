@@ -1,5 +1,5 @@
 #pragma once
-#include "UnitFilter.h"
+#include "EntityFilter.h"
 #include "Utilities/Events.h"
 
 namespace RTS
@@ -42,9 +42,9 @@ namespace RTS
 
 	struct RTSAPI
 	{
-		static bool Action(Action action, UnitFilter target);
+		static bool Action(Action action, EntityFilter target);
 
-		static bool Condition(UnitFilter target);
+		static bool Condition(EntityFilter target);
 
 	private:
 		friend CE::ReflectAccess;

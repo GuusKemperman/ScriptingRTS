@@ -1,6 +1,6 @@
 #pragma once
 #include "Core/ScriptingAPI.h"
-#include "Core/UnitFilter.h"
+#include "Core/EntityFilter.h"
 
 namespace RTS
 {
@@ -18,7 +18,7 @@ namespace RTS
 			Action mAction{};
 			uint16 mAmountToJumpIfTrue;
 		};
-		UnitFilter mFilter{};
+		EntityFilter mFilter{};
 
 		enum class Type : uint8
 		{

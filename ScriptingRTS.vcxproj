@@ -222,11 +222,15 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Core\Filters\HealthFilter.cpp" />
     <ClCompile Include="Source\Commands\MoveToCommand.cpp" />
     <ClCompile Include="Source\Commands\ShootAtCommand.cpp" />
     <ClCompile Include="Source\Commands\SpawnUnitCommand.cpp" />
     <ClCompile Include="Source\Components\RenderingComponent.cpp" />
     <ClCompile Include="Source\Components\SimulationComponent.cpp" />
+    <ClCompile Include="Source\Core\Filters\RangeFilter.cpp" />
+    <ClCompile Include="Source\Core\Filters\TeamFilter.cpp" />
+    <ClCompile Include="Source\Core\Filters\TypeFilter.cpp" />
     <ClCompile Include="Source\Core\GameEvaluateStep.cpp" />
     <ClCompile Include="Source\Core\GameState.cpp" />
     <ClCompile Include="Source\Core\Main.cpp" />
@@ -238,7 +242,7 @@
     </ClCompile>
     <ClCompile Include="Source\Core\PlayerDataBase.cpp" />
     <ClCompile Include="Source\Core\ScriptingAPI.cpp" />
-    <ClCompile Include="Source\Core\UnitFilter.cpp" />
+    <ClCompile Include="Source\Core\EntityFilter.cpp" />
     <ClCompile Include="Source\Components\ScriptExamples\BasicCombat.cpp" />
     <ClCompile Include="Source\EditorSystems\ScriptGeneratorEditorSystem.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -266,6 +270,12 @@
     <ClInclude Include="Include\Components\UnitTypeTag.h" />
     <ClInclude Include="Include\Components\WeaponComponent.h" />
     <ClInclude Include="Include\Core\Constants.h" />
+    <ClInclude Include="Include\Core\EntityTypes.h" />
+    <ClInclude Include="Include\Core\Filters\FilterParams.h" />
+    <ClInclude Include="Include\Core\Filters\HealthFilter.h" />
+    <ClInclude Include="Include\Core\Filters\RangeFilter.h" />
+    <ClInclude Include="Include\Core\Filters\TeamFilter.h" />
+    <ClInclude Include="Include\Core\Filters\TypeFilter.h" />
     <ClInclude Include="Include\Core\GameEvaluateStep.h" />
     <ClInclude Include="Include\Core\GameSimulationStep.h" />
     <ClInclude Include="Include\Core\GameState.h" />
@@ -273,10 +283,11 @@
     <ClInclude Include="Include\Core\PlayerDataBase.h" />
     <ClInclude Include="Include\Core\RTSCollisionLayers.h" />
     <ClInclude Include="Include\Core\ScriptingAPI.h" />
-    <ClInclude Include="Include\Core\UnitFilter.h" />
+    <ClInclude Include="Include\Core\EntityFilter.h" />
     <ClInclude Include="Include\Core\UnitTypes.h" />
     <ClInclude Include="Include\Core\WeaponTypes.h" />
     <ClInclude Include="Include\EditorSystems\ScriptGeneratorEditorSystem.h" />
+    <ClInclude Include="Include\Components\ObjectiveComponent.h" />
     <ClInclude Include="Include\ScriptingRTS\Precomp.h" />
     <ClInclude Include="Include\Scripting\CompiledProgram.h" />
     <ClInclude Include="Include\States\FleeFromEntityState.h" />

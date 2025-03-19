@@ -42,7 +42,7 @@ void RTS::Internal::SetOnUnitEvaluateTargetForCurrentThread(OnUnitEvaluateTarget
 	sTarget = target;
 }
 
-bool RTS::RTSAPI::Action(RTS::Action action, UnitFilter target)
+bool RTS::RTSAPI::Action(RTS::Action action, EntityFilter target)
 {
 	switch (action)
 	{
@@ -57,10 +57,10 @@ bool RTS::RTSAPI::Action(RTS::Action action, UnitFilter target)
 	return false;
 }
 
-bool RTS::RTSAPI::Condition(UnitFilter target)
+bool RTS::RTSAPI::Condition(EntityFilter target)
 {
 	CheckTarget();
-	return target(sTarget.sCurrentState->GetWorld(), sTarget.sCurrentUnit) != entt::null;
+	return target(*sTarget.sCurrentState, sTarget.sCurrentUnit) != entt::null;
 }
 
 CE::MetaType RTS::RTSAPI::Reflect()

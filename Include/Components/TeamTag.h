@@ -1,13 +1,13 @@
 #pragma once
-#include "Core/RTSCollisionLayers.h"
 #include "Meta/Fwd/MetaTypeIdFwd.h"
 
 namespace RTS
 {
-	enum class TeamId : bool { Team1, Team2 };
+	enum class TeamId : uint8 { Team1, Team2, Neutral };
 
 	struct Team1Tag {};
 	struct Team2Tag {};
+	struct NeutralTag {};
 
 	constexpr TeamId SwitchTeams(TeamId team)
 	{
@@ -16,19 +16,13 @@ namespace RTS
 
 	constexpr CE::TypeId GetTeamTagStorage(TeamId team)
 	{
-		if (team == TeamId::Team1)
+		switch (team)
 		{
-			return CE::MakeTypeId<Team1Tag>();
+		case TeamId::Team1: return CE::MakeTypeId<Team1Tag>();
+		case TeamId::Team2: return CE::MakeTypeId<Team2Tag>();
+		case TeamId::Neutral: return CE::MakeTypeId<NeutralTag>();
 		}
-		return CE::MakeTypeId<Team2Tag>();
-	}
-
-	constexpr CollisionLayer GetTeamLayer(TeamId id)
-	{
-		if (id == TeamId::Team1)
-		{
-			return CollisionLayer::Team1Layer;
-		}
-		return CollisionLayer::Team2Layer;
+		ABORT;
+		return {};
 	}
 }

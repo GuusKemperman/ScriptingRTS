@@ -35,11 +35,4 @@ namespace RTS
 	{
 		return sUnitTypes[type];
 	}
-
-	template<auto PtrToMember>
-	constexpr auto GetUnitProperty(UnitType::Enum type)
-	{
-		return sUnitTypes[type].*PtrToMember;
-	}
-
 }
