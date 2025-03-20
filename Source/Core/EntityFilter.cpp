@@ -24,6 +24,12 @@
 void RTS::EntityFilter::DisplayWidget(const std::string& )
 {
 	CE::ShowInspectUI("SortByDistance", mSortByDistance);
+
+	CE::ShowInspectUI("Type", mType.mEnum);
+	CE::ShowInspectUI("Team", mTeam.mEnum);
+	CE::ShowInspectUI("Range", mRange.mEnum);
+	CE::ShowInspectUI("Health", mHealth.mEnum);
+
 	ImGui::TextUnformatted("Better script viewing coming soon!");
 }
 #endif

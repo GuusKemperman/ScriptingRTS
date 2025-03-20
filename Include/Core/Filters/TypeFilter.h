@@ -31,3 +31,9 @@ namespace RTS
 		bool operator()(const CheckEntityParam& param, const PerEntityCache& perEntityCache) const;
 	};
 }
+
+template <>
+struct magic_enum::customize::enum_range<RTS::TypeFilter::Enum>
+{
+	static constexpr bool is_flags = true;
+};
