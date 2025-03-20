@@ -80,20 +80,14 @@ namespace cereal
 	template<typename Archive>
 	void serialize([[maybe_unused]] Archive& ar, [[maybe_unused]] RTS::EntityFilter& value, [[maybe_unused]] uint32 version)
 	{
-		//ar(value.mSortByDistance);
-		//ar(value.mTeam);
+		ar(value.mSortByDistance);
 
-		//if (version >= 1)
-		//{
-		//	ar(value.mRange);
-		//}
-
-		//if (version >= 2)
-		//{
-		//	ar(value.mHealth);
-		//}
+		value.ForEachFilter([&](auto& filter)
+			{
+				ar(filter.mEnum);
+			});
 	}
 }
 
-CEREAL_CLASS_VERSION(RTS::EntityFilter, 2);
+CEREAL_CLASS_VERSION(RTS::EntityFilter, 0);
 
