@@ -98,6 +98,7 @@ entt::entity RTS::EntityFilter::operator()(const GameState& state, entt::entity 
 			return CE::Physics::ExploreOrder::NearestFirst;
 		}();
 
+#if 0
 	state.GetWorld().GetPhysics().Explore(order,
 		requestPos,
 		collisionFilter,
@@ -107,7 +108,48 @@ entt::entity RTS::EntityFilter::operator()(const GameState& state, entt::entity 
 			return bestEntity != entt::null;
 		},
 		isValidEntity);
+#else
+	if (order == CE::Physics::ExploreOrder::NearestFirst)
+	{
+		float nearest = std::numeric_limits<float>::infinity();
 
+		for (entt::entity entity : state.GetWorld().GetRegistry().View<CE::TransformedDiskColliderComponent>())
+		{
+			if (!isValidEntity(entity))
+			{
+				continue;
+			}
+
+			float dist = state.GetWorld().GetPhysics().GetSignedDistance(entity, requestPos);
+
+			if (dist < nearest)
+			{
+				bestEntity = entity;
+				nearest = dist;
+			}
+		}
+	}
+	else if (order == CE::Physics::ExploreOrder::FarthestFirst)
+	{
+		float farthest = -std::numeric_limits<float>::infinity();
+
+		for (entt::entity entity : state.GetWorld().GetRegistry().View<CE::TransformedDiskColliderComponent>())
+		{
+			if (!isValidEntity(entity))
+			{
+				continue;
+			}
+
+			float dist = state.GetWorld().GetPhysics().GetSignedDistance(entity, requestPos);
+
+			if (dist > farthest)
+			{
+				bestEntity = entity;
+				farthest = dist;
+			}
+		}
+	}
+#endif
 	return bestEntity;
 }
 
