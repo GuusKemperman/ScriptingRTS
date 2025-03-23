@@ -4,34 +4,16 @@
 #include "Assets/Level.h"
 #include "Commands/CommandBuffer.h"
 #include "Components/IsDestroyedTag.h"
+#include "Components/ScriptExamples/BasicCombatComponent.h"
 #include "Core/AssetManager.h"
 #include "Core/GameSimulationStep.h"
 #include "World/Registry.h"
 
 RTS::GameState::GameState(CE::ComponentFilter team1Script, CE::ComponentFilter team2Script) :
 	mWorld(std::make_unique<CE::World>(false)),
-	mTeam1Script(team1Script),
-	mTeam2Script(team2Script)
+	mTeam1Script(team1Script == nullptr ? &CE::MetaManager::Get().GetType<Examples::BasicCombatComponent>() : team1Script),
+	mTeam2Script(team2Script == nullptr ? &CE::MetaManager::Get().GetType<Examples::BasicCombatComponent>() : team2Script)
 {
-	auto setScript = [](auto& script)
-		{
-			if (script == nullptr)
-			{
-				const CE::MetaType* playerScript = CE::MetaManager::Get().TryGetType("S_Unit");
-
-				if (playerScript != nullptr)
-				{
-					script = playerScript;
-				}
-				else
-				{
-					LOG(LogGame, Error, "No player script!");
-				}
-			}
-		};
-	setScript(mTeam1Script);
-	setScript(mTeam2Script);
-
 	CE::AssetHandle level = CE::AssetManager::Get().TryGetAsset<CE::Level>("L_SimulationStart");
 
 	if (level == nullptr)
