@@ -3,6 +3,7 @@
 
 #include <entt/entity/runtime_view.hpp>
 
+#include "Core/EntityTypes.h"
 #include "Core/ScriptingAPI.h"
 #include "Utilities/Reflect/ReflectComponentType.h"
 #include "World/EventManager.h"
@@ -111,11 +112,6 @@ void RTS::SimulationComponent::InvokeEvaluateEvents()
 	}
 }
 
-RTS::SimulationComponent::~SimulationComponent()
-{
-
-}
-
 void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 {
 	auto clearBuffers = []<typename T>(CommandBuffer<T>&buffer)
@@ -153,6 +149,8 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 				}
 			}
 		}
+
+		mSimulateStep.AddCommand(SpawnObjectiveCommand{ });
 
 		GetGameState().Step(mSimulateStep);
 		mNumStepsCompleted++;
@@ -239,7 +237,7 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 				CommandBuffer<MoveToCommand>& moveToBuffer = mSimulateStep.GetBuffer<MoveToCommand>();
 
 				moveToBuffer.Clear();
-				for (auto [entity, disk] : world.GetRegistry().View<CE::TransformedDiskColliderComponent>().each())
+				for (auto [entity, disk] : world.GetRegistry().View<CE::TransformedDiskColliderComponent, UnitTag>().each())
 				{
 					moveToBuffer.AddCommand(entity, disk.mCentre);
 				}

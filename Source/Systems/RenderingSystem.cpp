@@ -64,15 +64,27 @@ void RTS::RenderingSystem::Render(const CE::World& viewportWorld, CE::RenderComm
 		fmodf(totalTimePassed, Constants::sSimulationStepSize) * (1.0f / Constants::sSimulationStepSize),
 		0.0f, 1.0f);
 
+	const auto getColor = [&](TeamId team) -> glm::vec4
+		{
+			if (team == TeamId::Neutral)
+			{
+				return glm::vec4{ 0.25f, 0.25f, 0.25f, 1.0f };
+			}
+
+			return renderingComponent.mDisplayForTeam == team
+				? renderingComponent.mFriendlyColour
+				: renderingComponent.mEnemyColour;
+		};
+
 	const CE::World& prevWorld = mPreviousState->GetWorld();
 	const CE::World& currWorld = mCurrentState->GetWorld();
 
-	auto prevView = prevWorld.GetRegistry().View<CE::TransformedDiskColliderComponent, TeamId>();
-	auto currView = currWorld.GetRegistry().View<CE::TransformedDiskColliderComponent, TeamId>();
+	auto prevView = prevWorld.GetRegistry().View<CE::TransformedDiskColliderComponent, TeamId, UnitType::Enum>();
+	auto currView = currWorld.GetRegistry().View<CE::TransformedDiskColliderComponent, TeamId, UnitType::Enum>();
 	float height = 0.0f;
 	float heightStep = 1.0f / static_cast<float>(currView.size_hint());
 
-	for (auto [entity, currDisk, team] : currView.each())
+	for (auto [entity, currDisk, team, unitType] : currView.each())
 	{
 		float renderHeight = height;
 		height += heightStep;
@@ -82,9 +94,7 @@ void RTS::RenderingSystem::Render(const CE::World& viewportWorld, CE::RenderComm
 			continue;
 		}
 
-		const glm::vec4 col = renderingComponent.mDisplayForTeam == team
-			? renderingComponent.mFriendlyColour
-			: renderingComponent.mEnemyColour;
+		const glm::vec4 col = getColor(team);
 
 		const CE::TransformedDiskColliderComponent& prevDisk = prevView.get<CE::TransformedDiskColliderComponent>(entity);
 
@@ -182,6 +192,40 @@ void RTS::RenderingSystem::Render(const CE::World& viewportWorld, CE::RenderComm
 			CE::To3D(proj.mSourcePosition),
 			CE::To3D(proj.mTargetPosition),
 			glm::vec4{ 0.0f, 1.0f, 0.0f, 1.0f });
+	}
+
+
+	for (auto [entity, disk, objective, team] : currWorld.GetRegistry().View<CE::TransformedDiskColliderComponent,
+			ObjectiveComponent,
+			TeamId>().each())
+	{
+		CE::AddDebugCircle(renderQueue,
+			CE::DebugDraw::Sound,
+			CE::To3D(disk.mCentre),
+			disk.mRadius,
+			getColor(team));
+
+		const glm::vec4 ringCol = getColor(objective.mAmountCaptured < 0.0f ? TeamId::Team1 : TeamId::Team2);
+
+		static constexpr int numSteps = 25;
+
+		for (int i = 0; i < numSteps; i++)
+		{
+			const float percentage = static_cast<float>(i) / static_cast<float>(numSteps);
+
+			if (percentage > glm::abs(objective.mAmountCaptured))
+			{
+				break;
+			}
+
+			float radius = percentage * disk.mRadius;
+
+			CE::AddDebugCircle(renderQueue,
+				CE::DebugDraw::Sound,
+				CE::To3D(disk.mCentre, .1f),
+				radius,
+				ringCol);
+		}
 	}
 }
 

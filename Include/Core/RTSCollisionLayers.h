@@ -13,7 +13,7 @@ namespace RTS
 
 	constexpr CE::CollisionLayer ToCE(RTS::CollisionLayer layer) { return static_cast<CE::CollisionLayer>(layer); }
 
-	constexpr std::optional<CollisionLayer> GetCollisionLayer( TeamId team)
+	constexpr std::optional<CollisionLayer> GetCollisionLayer(TeamId team)
 	{
 		switch (team)
 		{
@@ -21,5 +21,6 @@ namespace RTS
 		case TeamId::Team2: return CollisionLayer::Team2Layer;
 		case TeamId::Neutral: return std::nullopt;
 		}
+		return std::nullopt;
 	}
 }

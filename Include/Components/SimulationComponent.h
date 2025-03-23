@@ -30,8 +30,6 @@ namespace RTS
 		void InvokeEvaluateEvents();
 
 	public:
-		~SimulationComponent();
-
 		void OnBeginPlay(CE::World& world, entt::entity owner);
 
 		void StartSimulation();

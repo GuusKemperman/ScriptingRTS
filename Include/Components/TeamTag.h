@@ -25,4 +25,13 @@ namespace RTS
 		ABORT;
 		return {};
 	}
+
+	void SwitchTeams(
+		entt::entity entity, 
+		TeamId desiredTeam,
+		entt::storage_for_t<Team1Tag>& team1,
+		entt::storage_for_t<Team2Tag>& team2,
+		entt::storage_for_t<NeutralTag>& neutral,
+		entt::storage_for_t<TeamId>& teamId,
+		bool isNewEntity);
 }

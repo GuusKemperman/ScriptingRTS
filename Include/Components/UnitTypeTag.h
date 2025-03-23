@@ -4,7 +4,7 @@
 namespace RTS
 {
 	template<UnitType::Enum>
-	struct UnitTag {};
+	struct UnitTypeTag {};
 
-	using TankTag = UnitTag<UnitType::Tank>;
+	using TankTag = UnitTypeTag<UnitType::Tank>;
 }

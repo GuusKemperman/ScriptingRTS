@@ -27,7 +27,10 @@ void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitC
 	auto& team1Storage = reg.Storage<Team1Tag>();
 	auto& team2Storage = reg.Storage<Team2Tag>();
 
-	auto& unitStorage = reg.Storage<UnitType::Enum>();
+	auto& entityStorage = reg.Storage<EntityType::Enum>();
+	auto& unitStorage = reg.Storage<UnitTag>();
+
+	auto& unitTypeStorage = reg.Storage<UnitType::Enum>();
 	auto& tankStorage = reg.Storage<TankTag>();
 
 	CE::CollisionRules rules{};
@@ -49,7 +52,7 @@ void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitC
 		}
 
 		transformStorage.emplace(entity, command.mPosition, type.mRadius);
-		unitStorage.emplace(entity, command.mUnitType);
+		unitTypeStorage.emplace(entity, command.mUnitType);
 		teamStorage.emplace(entity, command.mTeamId);
 
 		switch (command.mTeamId)
@@ -80,5 +83,8 @@ void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitC
 
 		weaponStorage.emplace(entity, type.mWeaponType);
 		healthStorage.emplace(entity, type.mHealth);
+
+		entityStorage.emplace(entity, EntityType::Unit);
+		unitStorage.emplace(entity);
 	}
 }

@@ -10,4 +10,7 @@ namespace RTS
 			Objective
 		};
 	};
+
+	struct UnitTag{};
+	struct ObjectiveTag{};
 }

@@ -222,6 +222,8 @@
     <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Commands\CaptureObjectiveCommand.cpp" />
+    <ClCompile Include="Source\Commands\SpawnObjectiveCommand.cpp" />
     <ClCompile Include="Source\Core\Filters\HealthFilter.cpp" />
     <ClCompile Include="Source\Commands\MoveToCommand.cpp" />
     <ClCompile Include="Source\Commands\ShootAtCommand.cpp" />
@@ -249,6 +251,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Source\Scripting\CompiledProgram.cpp" />
+    <ClCompile Include="Source\States\CaptureObjectiveState.cpp" />
     <ClCompile Include="Source\States\FleeFromEntityState.cpp" />
     <ClCompile Include="Source\States\MoveToEntityState.cpp" />
     <ClCompile Include="Source\States\ShootAtEntityState.cpp" />
@@ -257,9 +260,11 @@
     <ClCompile Include="Source\UnitTests\SymmetryTests.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Include\Commands\CaptureObjectiveCommand.h" />
     <ClInclude Include="Include\Commands\CommandBuffer.h" />
     <ClInclude Include="Include\Commands\MoveToCommand.h" />
     <ClInclude Include="Include\Commands\ShootAtCommand.h" />
+    <ClInclude Include="Include\Commands\SpawnObjectiveCommand.h" />
     <ClInclude Include="Include\Commands\SpawnUnitCommand.h" />
     <ClInclude Include="Include\Components\HealthComponent.h" />
     <ClInclude Include="Include\Components\ProjectileComponent.h" />
@@ -290,6 +295,7 @@
     <ClInclude Include="Include\Components\ObjectiveComponent.h" />
     <ClInclude Include="Include\ScriptingRTS\Precomp.h" />
     <ClInclude Include="Include\Scripting\CompiledProgram.h" />
+    <ClInclude Include="Include\States\CaptureObjectiveState.h" />
     <ClInclude Include="Include\States\FleeFromEntityState.h" />
     <ClInclude Include="Include\States\MoveToEntityState.h" />
     <ClInclude Include="Include\States\ShootAtEntityState.h" />
