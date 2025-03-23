@@ -64,7 +64,7 @@ void RTS::CompiledProgram::Run() const
 		{
 			if (RTSAPI::Condition(current.mFilter))
 			{
-				instruction += current.mAmountToJumpIfTrue;
+				instruction += std::max<decltype(current.mAmountToJumpIfTrue)>(current.mAmountToJumpIfTrue, 1);
 			}
 			else
 			{
