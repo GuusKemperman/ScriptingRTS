@@ -18,7 +18,7 @@ namespace RTS
 			From50To75 = 1 << 3,
 			From75To100 = 1 << 4,
 			Full = 1 << 5,
-			Any = 0xff
+			Any = From0To25 | From25To50 | From50To75 | From75To100 | Full
 		};
 		Enum mEnum = Any;
 

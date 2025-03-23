@@ -16,6 +16,11 @@ RTS::HealthFilter::PerEntityCache::PerEntityCache(const MakeCacheParam& param)
 
 bool RTS::HealthFilter::operator()(const CheckEntityParam& param, const PerEntityCache& perEntityCache) const
 {
+	if (param.mFilter.mHealth.mEnum == Any)
+	{
+		return true;
+	}
+
 	if (perEntityCache.mHealthStorage == nullptr
 		|| perEntityCache.mUnitTypeStorage == nullptr
 		|| !perEntityCache.mUnitTypeStorage->contains(param.mPotentialTarget)
