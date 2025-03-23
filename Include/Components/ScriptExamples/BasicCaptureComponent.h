@@ -8,13 +8,13 @@ namespace CE
 
 namespace RTS::Examples
 {
-	class BasicCombatComponent
+	class BasicCaptureComponent
 	{
 	public:
 		static void OnUnitEvaluate(CE::World&, entt::entity);
 	private:
 		friend CE::ReflectAccess;
 		static CE::MetaType Reflect();
-		REFLECT_AT_START_UP(BasicCombatComponent);
+		REFLECT_AT_START_UP(BasicCaptureComponent);
 	};
 }

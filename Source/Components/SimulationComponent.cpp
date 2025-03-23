@@ -151,6 +151,16 @@ void RTS::SimulationComponent::SimulateThread(const std::stop_token& stop)
 		}
 
 		mSimulateStep.AddCommand(SpawnObjectiveCommand{ });
+		auto objectivePositions = 
+		{
+			glm::vec2{ 0.0f, -30.0f },
+			glm::vec2{ 25.0f, 0.0f },
+		 };
+		for (const glm::vec2& pos : objectivePositions)
+		{
+			mSimulateStep.AddCommand(SpawnObjectiveCommand{ pos });
+			mSimulateStep.AddCommand(SpawnObjectiveCommand{ -pos });
+		}
 
 		GetGameState().Step(mSimulateStep);
 		mNumStepsCompleted++;

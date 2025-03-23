@@ -81,7 +81,7 @@ RTS::GameState::GameResult RTS::GameState::GetGameResult(TeamId team) const
 
 	if (mNumStepsCompleted == Constants::sTotalNumSimulationSteps)
 	{
-		if (scoreAllies == scoreEnemies)
+		if (glm::abs(scoreAllies - scoreEnemies) < 1.0f)
 		{
 			return GameResult::Draw;
 		}
@@ -92,17 +92,17 @@ RTS::GameState::GameResult RTS::GameState::GetGameResult(TeamId team) const
 		return GameResult::Victory;
 	}
 
-	if (scoreAllies == 0.0f && scoreEnemies == 0.0f)
+	if (scoreAllies >= sWinningScore && scoreEnemies >= sWinningScore)
 	{
 		return GameResult::Draw;
 	}
-	if (scoreAllies == 0.0f)
-	{
-		return GameResult::Defeat;
-	}
-	if (scoreEnemies == 0.0f)
+	if (scoreAllies >= sWinningScore)
 	{
 		return GameResult::Victory;
+	}
+	if (scoreEnemies >= sWinningScore)
+	{
+		return GameResult::Defeat;
 	}
 
 	return GameResult::Undetermined;
@@ -115,6 +115,23 @@ bool RTS::GameState::IsGameOver() const
 
 float RTS::GameState::GetScore(TeamId team) const
 {
-	const entt::sparse_set* storage = GetWorld().GetRegistry().Storage(GetTeamTagStorage(team));
-	return storage == nullptr ? 0.0f : static_cast<float>(storage->size());
+	switch (team)
+	{
+	case TeamId::Team1: return mTeam1Score;
+	case TeamId::Team2: return mTeam2Score;
+	default:
+		return 0.0f;
+	}
+}
+
+void RTS::GameState::SetScore(TeamId team, float score)
+{
+	switch (team)
+	{
+	case TeamId::Team1: mTeam1Score = score; break;
+	case TeamId::Team2: mTeam2Score = score; break;
+	default:
+		break;
+	}
+
 }

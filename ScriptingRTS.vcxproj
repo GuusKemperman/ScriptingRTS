@@ -224,6 +224,7 @@
   <ItemGroup>
     <ClCompile Include="Source\Commands\CaptureObjectiveCommand.cpp" />
     <ClCompile Include="Source\Commands\SpawnObjectiveCommand.cpp" />
+    <ClCompile Include="Source\Components\ScriptExamples\BasicCaptureComponent.cpp" />
     <ClCompile Include="Source\Core\Filters\HealthFilter.cpp" />
     <ClCompile Include="Source\Commands\MoveToCommand.cpp" />
     <ClCompile Include="Source\Commands\ShootAtCommand.cpp" />
@@ -245,7 +246,7 @@
     <ClCompile Include="Source\Core\PlayerDataBase.cpp" />
     <ClCompile Include="Source\Core\ScriptingAPI.cpp" />
     <ClCompile Include="Source\Core\EntityFilter.cpp" />
-    <ClCompile Include="Source\Components\ScriptExamples\BasicCombat.cpp" />
+    <ClCompile Include="Source\Components\ScriptExamples\BasicCombatComponent.cpp" />
     <ClCompile Include="Source\EditorSystems\ScriptGeneratorEditorSystem.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -269,9 +270,11 @@
     <ClInclude Include="Include\Components\HealthComponent.h" />
     <ClInclude Include="Include\Components\ProjectileComponent.h" />
     <ClInclude Include="Include\Components\RenderingComponent.h" />
+    <ClInclude Include="Include\Components\ScriptExamples\BasicCaptureComponent.h" />
     <ClInclude Include="Include\Components\ScriptExamples\BasicCombatComponent.h" />
     <ClInclude Include="Include\Components\SimulationComponent.h" />
     <ClInclude Include="Include\Components\TeamTag.h" />
+    <ClInclude Include="Include\Components\UnitSpawnPositionComponent.h" />
     <ClInclude Include="Include\Components\UnitTypeTag.h" />
     <ClInclude Include="Include\Components\WeaponComponent.h" />
     <ClInclude Include="Include\Core\Constants.h" />

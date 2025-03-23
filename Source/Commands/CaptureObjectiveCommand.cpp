@@ -62,6 +62,12 @@ void RTS::CaptureObjectiveCommand::Execute(GameState& state, std::span<const Cap
 				return .0f;
 			};
 
+		if (objectiveTeam != TeamId::Neutral && teamToAmountCaptured(objectiveTeam) == objective.mAmountCaptured)
+		{
+			state.SetScore(objectiveTeam, 
+				state.GetScore(objectiveTeam) + ObjectiveComponent::sPointsPerSecond * Constants::sSimulationStepSize);
+		}
+
 		if (numTeam1 == 0
 			&& numTeam2 == 0)
 		{
@@ -83,12 +89,12 @@ void RTS::CaptureObjectiveCommand::Execute(GameState& state, std::span<const Cap
 					setNewCaptureValue(objective.mAmountCaptured + deltaWithSpeed);
 				}
 			}
-			return;
+			continue;
 		}
 
 		if (numTeam1 == numTeam2)
 		{
-			return;
+			continue;
 		}
 
 		auto getCaptureSpeed = [](uint32 count)

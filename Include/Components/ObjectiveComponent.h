@@ -10,5 +10,7 @@ namespace RTS
 		static constexpr float sCaptureDuration = 10.0f;
 
 		static constexpr float sPassiveAmountCapturedLossPerSecond = 1.0f;
+
+		static constexpr float sPointsPerSecond = 1.0f;
 	};
 }

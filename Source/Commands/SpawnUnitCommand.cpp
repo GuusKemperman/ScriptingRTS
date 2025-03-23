@@ -2,6 +2,7 @@
 #include "Commands/SpawnUnitCommand.h"
 
 #include "Components/HealthComponent.h"
+#include "Components/UnitSpawnPositionComponent.h"
 #include "Components/UnitTypeTag.h"
 #include "Components/WeaponComponent.h"
 #include "Components/Physics2D/DiskColliderComponent.h"
@@ -14,6 +15,8 @@
 void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitCommand> commands)
 {
 	CE::Registry& reg = state.GetWorld().GetRegistry();
+
+	auto& spawnPositionStorage = reg.Storage<UnitSpawnPositionComponent>();
 
 	auto& transformStorage = reg.Storage<CE::TransformedDiskColliderComponent>();
 	auto& physicsStorage = reg.Storage<CE::PhysicsBody2DComponent>();
@@ -52,6 +55,7 @@ void RTS::SpawnUnitCommand::Execute(GameState& state, std::span<const SpawnUnitC
 		}
 
 		transformStorage.emplace(entity, command.mPosition, type.mRadius);
+		spawnPositionStorage.emplace(entity, command.mPosition);
 		unitTypeStorage.emplace(entity, command.mUnitType);
 		teamStorage.emplace(entity, command.mTeamId);
 

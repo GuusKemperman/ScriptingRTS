@@ -3,6 +3,7 @@
 
 #include "Components/HealthComponent.h"
 #include "Components/ProjectileComponent.h"
+#include "Components/UnitSpawnPositionComponent.h"
 #include "Components/UnitTypeTag.h"
 #include "Components/WeaponComponent.h"
 #include "Components/Physics2D/DiskColliderComponent.h"
@@ -14,7 +15,7 @@ void RTS::ShootAtCommand::Execute(GameState& state, std::span<const ShootAtComma
 {
 	CE::Registry& reg = state.GetWorld().GetRegistry();
 
-	const auto& transformStorage = reg.Storage<CE::TransformedDiskColliderComponent>();
+	auto& transformStorage = reg.Storage<CE::TransformedDiskColliderComponent>();
 	auto& projectileStorage = reg.Storage<ProjectileComponent>();
 	auto& weaponStorage = reg.Storage<WeaponComponent>();
 	auto& healthStorage = reg.Storage<HealthComponent>();
@@ -68,7 +69,7 @@ void RTS::ShootAtCommand::Execute(GameState& state, std::span<const ShootAtComma
 				.mSourcePosition = startPos,
 				.mTargetPosition = endPos,
 				.mNumStepsUntilImpact = static_cast<uint8>(numStepsUntilImpact),
-				.mHasHit = randomNum <= accuracy
+				.mHasHit = healthStorage.contains(command.mTargetEntity) ? randomNum <= accuracy : false
 			});
 	}
 
@@ -91,7 +92,7 @@ void RTS::ShootAtCommand::Execute(GameState& state, std::span<const ShootAtComma
 			continue;
 		}
 
-		const CE::TransformedDiskColliderComponent& targetDisk = transformStorage.get(proj.mTargetEntity);
+		CE::TransformedDiskColliderComponent& targetDisk = transformStorage.get(proj.mTargetEntity);
 
 		if (!CE::AreOverlapping(targetDisk, proj.mTargetPosition))
 		{
@@ -110,7 +111,11 @@ void RTS::ShootAtCommand::Execute(GameState& state, std::span<const ShootAtComma
 
 		if (health.mHealth <= 0.0f)
 		{
-			reg.Destroy(proj.mTargetEntity, false);
+			UnitSpawnPositionComponent& spawn = reg.Get<UnitSpawnPositionComponent>(proj.mTargetEntity);
+			targetDisk.mCentre = spawn.mSpawnedAtPosition;
+
+			const UnitType& type = GetUnitType(reg.Get<UnitType::Enum>(proj.mTargetEntity));
+			health.mHealth =  type.mHealth;
 		}
 	}
 

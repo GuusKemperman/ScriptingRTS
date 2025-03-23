@@ -44,7 +44,10 @@ namespace RTS
 
 		bool IsGameOver() const;
 
+		static constexpr float sWinningScore = 1000.0f;
+
 		float GetScore(TeamId team) const;
+		void SetScore(TeamId team, float score);
 
 	private:
 		std::unique_ptr<CE::World> mWorld;
@@ -52,6 +55,9 @@ namespace RTS
 
 		CE::ComponentFilter mTeam1Script{};
 		CE::ComponentFilter mTeam2Script{};
+
+		float mTeam1Score{};
+		float mTeam2Score{};
 	};
 }
 
