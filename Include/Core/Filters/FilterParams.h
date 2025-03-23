@@ -1,5 +1,10 @@
 #pragma once
 
+namespace CE
+{
+	struct CollisionRules;
+}
+
 namespace RTS
 {
 	class GameState;
@@ -9,6 +14,7 @@ namespace RTS
 	{
 		const GameState& mState;
 		const EntityFilter& mFilter;
+		CE::CollisionRules& mCollisionRules;
 		entt::entity mRequestedBy;
 	};
 

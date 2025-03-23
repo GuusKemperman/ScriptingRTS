@@ -59,11 +59,10 @@ entt::entity RTS::EntityFilter::operator()(const GameState& state, entt::entity 
 	collisionFilter.mLayer = CE::CollisionLayer::Query;
 
 	// TODO only overlap desired layers
-	collisionFilter.SetResponse(ToCE(CollisionLayer::Team1Layer), CE::CollisionResponse::Overlap);
-	collisionFilter.SetResponse(ToCE(CollisionLayer::Team2Layer), CE::CollisionResponse::Overlap);
+
 	collisionFilter.SetResponse(ToCE(CollisionLayer::Objectives), CE::CollisionResponse::Overlap);
 
-	const MakeCacheParam makeCacheParam{ state, *this, requestedByUnit };
+	const MakeCacheParam makeCacheParam{ state, *this, collisionFilter, requestedByUnit };
 	TypeFilter::PerEntityCache perEntityCacheType{ makeCacheParam };
 	TeamFilter::PerEntityCache perEntityCacheTeam{ makeCacheParam };
 	RangeFilter::PerEntityCache perEntityCacheRange{ makeCacheParam };
@@ -98,7 +97,7 @@ entt::entity RTS::EntityFilter::operator()(const GameState& state, entt::entity 
 			return CE::Physics::ExploreOrder::NearestFirst;
 		}();
 
-#if 0
+#if 1
 	state.GetWorld().GetPhysics().Explore(order,
 		requestPos,
 		collisionFilter,

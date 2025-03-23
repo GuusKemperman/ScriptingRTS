@@ -3,6 +3,7 @@
 
 #include "Core/EntityFilter.h"
 #include "Core/GameState.h"
+#include "Core/RTSCollisionLayers.h"
 #include "World/Registry.h"
 
 RTS::TeamFilter::PerEntityCache::PerEntityCache(const MakeCacheParam& param)
@@ -21,6 +22,14 @@ RTS::TeamFilter::PerEntityCache::PerEntityCache(const MakeCacheParam& param)
 	auto addTeamId = [&](TeamId targetTeamId)
 		{
 			isTeamAllowed[static_cast<int>(targetTeamId)] = true;
+			
+			std::optional layer = GetCollisionLayer(targetTeamId);
+		
+			if (param.mFilter.mType.mEnum & TypeFilter::Unit
+				&& layer.has_value())
+			{
+				param.mCollisionRules.SetResponse(ToCE(*layer), CE::CollisionResponse::Overlap);
+			}
 		};
 
 	if (param.mFilter.mTeam.mEnum & Friendly)
