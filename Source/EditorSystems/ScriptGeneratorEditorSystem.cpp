@@ -181,7 +181,7 @@ void RTS::ScriptGeneratorEditorSystem::SimulateThread(const std::stop_token& sto
 	auto randomizeProgram = [](CompiledProgram& program)
 		{
 			program.mInstructions.clear();
-			program.mInstructions.resize(CE::Random::Range<size_t>(1, 32));
+			program.mInstructions.resize(CE::Random::Range<size_t>(3, 16));
 
 			static constexpr auto randomEnum = []<typename T>(T& value)
 			{
@@ -192,7 +192,7 @@ void RTS::ScriptGeneratorEditorSystem::SimulateThread(const std::stop_token& sto
 
 			static constexpr auto randomBitEnum = []<typename T>(T& value)
 			{
-				value = static_cast<T>(CE::Random::Value<std::underlying_type_t<T>>());
+				value = static_cast<T>(CE::Random::Value<uint32>());
 			};
 
 			for (size_t i = 0; i < program.mInstructions.size(); i++)
@@ -215,9 +215,10 @@ void RTS::ScriptGeneratorEditorSystem::SimulateThread(const std::stop_token& sto
 				}
 				}
 				randomEnum(instruction.mFilter.mSortByDistance);
-				randomEnum(instruction.mFilter.mTeam.mEnum);
-				randomEnum(instruction.mFilter.mRange.mEnum);
-				randomEnum(instruction.mFilter.mHealth.mEnum);
+				randomBitEnum(instruction.mFilter.mType.mEnum);
+				randomBitEnum(instruction.mFilter.mTeam.mEnum);
+				randomBitEnum(instruction.mFilter.mRange.mEnum);
+				randomBitEnum(instruction.mFilter.mHealth.mEnum);
 			}
 		};
 
